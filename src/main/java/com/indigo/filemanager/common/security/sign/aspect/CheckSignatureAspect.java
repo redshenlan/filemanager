@@ -10,6 +10,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,12 +38,15 @@ public class CheckSignatureAspect {
 		
 	}
 	
-	@Around("excudeService()")
+	@Around("checkSignaturePointcut()")
     public Object execute(ProceedingJoinPoint pjp) throws Throwable {
 		
 		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder
 				.getRequestAttributes()).getRequest();
 		String requestAuthorization = request.getHeader(Header_Authorization);
+		if(StringUtils.isEmpty(requestAuthorization)) {
+			throw new CheckSignatureFailureException("");
+		}
 		String[] requestAuth = requestAuthorization.split(AccessKeySecret_Spliter);
 		
 		String accessKeyId = requestAuth[0].replace(AccessKeyId_Prefix, "");
