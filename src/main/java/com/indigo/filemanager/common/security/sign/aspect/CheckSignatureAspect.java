@@ -2,6 +2,7 @@ package com.indigo.filemanager.common.security.sign.aspect;
 
 import java.lang.reflect.Method;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -18,7 +19,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import com.indigo.filemanager.bus.domain.entity.AccessKey;
+import com.indigo.filemanager.bus.service.AccessKeyManager;
 import com.indigo.filemanager.common.security.sign.exception.CheckSignatureFailureException;
+import com.indigo.filemanager.common.security.sign.exception.SignatureExceptionEnum;
 import com.indigo.filemanager.common.util.HMACSHA1EncryptUtil;
 
 @Aspect
@@ -33,6 +37,9 @@ public class CheckSignatureAspect {
 	
 	private static final String AccessKeyId_Prefix = "FS ";
 	
+	@Resource
+	private AccessKeyManager accessKeyManager;
+	
 	@Pointcut("@annotation(com.indigo.filemanager.common.security.sign.annotation.NeedCheckSignature)")
 	public void checkSignaturePointcut() {
 		
@@ -40,18 +47,21 @@ public class CheckSignatureAspect {
 	
 	@Around("checkSignaturePointcut()")
     public Object execute(ProceedingJoinPoint pjp) throws Throwable {
-		
 		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder
 				.getRequestAttributes()).getRequest();
 		String requestAuthorization = request.getHeader(Header_Authorization);
 		if(StringUtils.isEmpty(requestAuthorization)) {
-			throw new CheckSignatureFailureException("");
+			throw new CheckSignatureFailureException(SignatureExceptionEnum.NoSignatureInfo);
 		}
 		String[] requestAuth = requestAuthorization.split(AccessKeySecret_Spliter);
 		
 		String accessKeyId = requestAuth[0].replace(AccessKeyId_Prefix, "");
 		// 根据AccessKeyId查询AccessKeySecret
-		String accessKeySecret = "";
+		AccessKey accessKey = accessKeyManager.findByAccessKeyId(accessKeyId);
+		if(null == accessKey) {
+			throw new CheckSignatureFailureException(SignatureExceptionEnum.NoMatchAccessKey);
+		}
+		String accessKeySecret = accessKey.getAccessKeySecret();
 		
 		String requestSignature = requestAuth[1];
 		
@@ -73,7 +83,7 @@ public class CheckSignatureAspect {
 		String signature = HMACSHA1EncryptUtil.genHMAC(requestVerb + "\n" + requestUri + "\n" + requestDate + "\n", accessKeySecret);
 		// 失败时抛出校验失败的异常
 		if(!signature.equals(requestSignature)) {
-			throw new CheckSignatureFailureException("");
+			throw new CheckSignatureFailureException(SignatureExceptionEnum.SignatureCheckFailure);
 		}
 		
 		return pjp.proceed();
