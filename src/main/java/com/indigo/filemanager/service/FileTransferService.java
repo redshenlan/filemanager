@@ -19,6 +19,8 @@ public class FileTransferService {
     private String OpenOffice_HOME;
     @Value("${openoffice_convert_tempdir}")
     private String openoffice_convert_tempdir;
+    @Value("${openoffice_startservice}")
+    private String openoffice_startservice;
     public OutputStream transferPdf(InputStream inputStream,String filetype,String outFileType){
         if (OpenOffice_HOME.charAt(OpenOffice_HOME.length() - 1) != '/') {
             OpenOffice_HOME += "/";
@@ -34,7 +36,7 @@ public class FileTransferService {
             }
 //             启动OpenOffice的服务
             String command = OpenOffice_HOME
-                    + "program/soffice.exe -headless -accept=\"socket,host=127.0.0.1,port=8100;urp;\" -nofirststartwizard";
+                    + openoffice_startservice;
             pro = Runtime.getRuntime().exec(command);
             OpenOfficeConnection connection = new SocketOpenOfficeConnection("127.0.0.1", 8100);
             connection.connect();
