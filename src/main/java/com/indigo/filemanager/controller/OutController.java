@@ -32,9 +32,17 @@ import java.io.OutputStream;
 public class OutController {
     @Autowired
     private FileTransferService fileTransferService;
+
+	/**
+	 * 在线查看
+	 * @param filekey
+	 * @param response
+	 * @return
+	 * @throws IOException
+	 */
 	@RequestMapping("/files/view/{filekey}")
 	public String viewfile(@PathVariable("filekey") String filekey, HttpServletResponse response) throws IOException {
-		InputStream is = new FileInputStream("E:\\dgy\\projects\\filemanager\\filemanager\\123.pdf");
+		InputStream is = new FileInputStream("/opt/openoffice4/123.pdf");
 		OutputStream ops=response.getOutputStream();
 		response.setContentType("application/pdf");
 		 ops.flush();
@@ -47,6 +55,12 @@ public class OutController {
 
 		}
 		return null;
+	}
+	@RequestMapping("/testTransfer")
+	public void testTransfer() throws IOException {
+		InputStream inputStream = new FileInputStream("/opt/openoffice4/123.doc");
+		OutputStream outputStream=fileTransferService.transferPdf(inputStream,"doc","pdf");
+		outputStream.close();
 	}
 
 }
