@@ -21,10 +21,18 @@ public class FileInfo {
    */
   @NotNull
   private String fileKey;
-  private String filepath;
+  private String filepath="/";
   /**
    * file的后缀
    */
   @NotNull
   private String fileSuffix;
+  
+  /**
+   * 关系数据库存储属性
+   */
+  private Long fileSize;//文件大小
+  private String userCode;//用户代码
+  private String fileName;//文件名称
+  
 }
