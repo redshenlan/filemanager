@@ -27,7 +27,7 @@ public class Constants {
     public static enum OperaterType {
 		CREATE {
 			public String eval() {
-				return "C";
+				return "01";
 			}
 			public String getChinese() {
 				return "创建";
@@ -35,7 +35,7 @@ public class Constants {
 		},
 		READ {
 			public String eval() {
-				return "R";
+				return "02";
 			}
 			public String getChinese() {
 				return "读取";
@@ -43,7 +43,7 @@ public class Constants {
 		},
 		UPDATE {
 			public String eval() {
-				return "U";
+				return "03";
 			}
 			public String getChinese() {
 				return "修改";
@@ -51,10 +51,18 @@ public class Constants {
 		},
 		DELETE {
 			public String eval() {
-				return "D";
+				return "04";
 			}
 			public String getChinese() {
 				return "删除";
+			}
+		},
+		DOWNLOAD {
+			public String eval() {
+				return "05";
+			}
+			public String getChinese() {
+				return "下载";
 			}
 		};
 		public abstract String eval();

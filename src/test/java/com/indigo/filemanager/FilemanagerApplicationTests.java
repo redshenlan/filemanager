@@ -13,6 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.indigo.filemanager.bus.domain.UserRepository;
 import com.indigo.filemanager.bus.domain.entity.User;
+import com.indigo.filemanager.bus.service.FileManager;
 import com.indigo.filemanager.service.FileTransferService;
 
 @RunWith(SpringRunner.class)
@@ -23,6 +24,8 @@ public class FilemanagerApplicationTests {
 	private FileTransferService fileTransferService;
 	@Autowired
 	private UserRepository userRepository;
+	@Autowired
+	private FileManager fileManager;
 	@Test
 	public void contextLoads() {
 	}
@@ -40,6 +43,11 @@ public class FilemanagerApplicationTests {
 	public void userRepositoryTest() {
 		User user = userRepository.findByUserCodeAndValid("010101","Y");
 		System.out.println(user.getUserName());
+	}
+	
+	@Test
+	public void fileManagerTest() throws Exception {
+		fileManager.deleteFile("13239619412a4221ba54a4d9839f03bf", "010101");
 	}
 
 }

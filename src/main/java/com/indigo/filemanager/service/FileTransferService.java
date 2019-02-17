@@ -44,13 +44,14 @@ public class FileTransferService {
             // convert
             DocumentConverter converter = new OpenOfficeDocumentConverter(connection);
             // 2:获取Format
-            DocumentFormatRegistry factory = new DefaultDocumentFormatRegistry();
+            OwnDocumentFormatRegistry factory = new OwnDocumentFormatRegistry();
             DocumentFormat inputDocumentFormat = factory
                     .getFormatByFileExtension(filetype);
             DocumentFormat outputDocumentFormat = factory
                     .getFormatByFileExtension(outFileType);
             // 3:执行转换
-            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(openoffice_convert_tempdir+"/"+System.currentTimeMillis()+"."+outFileType));
+//            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(openoffice_convert_tempdir+"/"+System.currentTimeMillis()+"."+outFileType));
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
             converter.convert(inputStream, inputDocumentFormat,bos,outputDocumentFormat);
             connection.disconnect();
             // 封闭OpenOffice服务的进程

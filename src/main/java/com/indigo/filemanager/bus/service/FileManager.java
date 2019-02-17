@@ -13,13 +13,29 @@ public interface FileManager {
 	 * 文件上传
 	 * @param fileInfo
 	 */
-	public void uploadFile(FileInfo fileInfo) throws Exception;
+	public void uploadFile(FileInfo fileInfo,String userCode) throws Exception;
 	
 	/**
 	 * 文件下载
 	 * @param filekey
+	 * @param userCode
 	 * @return
 	 */
-	public FileInfo downloadFile(String filekey) throws Exception;
+	public FileInfo downloadFile(String filekey,String userCode) throws Exception;
 	
+	/**
+	 * 文件删除
+	 * @param filekey
+	 * @param userCode
+	 * @throws Exception
+	 */
+	public void deleteFile(String filekey,String userCode) throws Exception;
+	
+	/**
+	 * 文件更新
+	 * @param fileInfo
+	 * @param userCode
+	 * @throws Exception
+	 */
+	public void updateFile(FileInfo fileInfo,String userCode) throws Exception;
 }

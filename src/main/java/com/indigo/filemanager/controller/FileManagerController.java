@@ -2,6 +2,8 @@ package com.indigo.filemanager.controller;
 
 import java.io.ByteArrayOutputStream;
 import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -47,14 +49,15 @@ public class FileManagerController {
 					file.getOriginalFilename().lastIndexOf(".") + 1).toLowerCase();
 			fileInfo.setFileSuffix(fileSuffix);
 			fileInfo.setFileSize(file.getSize());
-			fileInfo.setUserCode(userCode);
 			fileInfo.setFileName(file.getOriginalFilename());
-			fileManager.uploadFile(fileInfo);
+			fileManager.uploadFile(fileInfo,userCode);
+			Map<String,Object> dataMap = new HashMap<String,Object>();
+			dataMap.put("filekey", fileInfo.getFileKey());
+			return ServerResponse.success(dataMap);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return ServerResponse.failure(Constants.Error.DEFAULT.eval(), e.getMessage());
 		}
-		return ServerResponse.success();
 	}
 	
 	/**
@@ -66,12 +69,37 @@ public class FileManagerController {
 	@RequestMapping(method = RequestMethod.GET, value = "/files/{filekey}")
 	public ResponseEntity<byte[]> download(@PathVariable("filekey") String filekey
 			,@RequestParam("userCode") String userCode) throws Exception {
-		FileInfo fileInfo = fileManager.downloadFile(filekey);
+		FileInfo fileInfo = fileManager.downloadFile(filekey,userCode);
 		HttpHeaders headers = new HttpHeaders();
 	    headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);  
 	    headers.setContentDispositionFormData("attachment", URLEncoder.encode(fileInfo.getFileName(),"UTF-8")); 
 	    ByteArrayOutputStream baos = (ByteArrayOutputStream)fileInfo.getDownFile();
 	    return new ResponseEntity<byte[]>(baos.toByteArray(),headers, HttpStatus.CREATED);
+	}
+	
+	/**
+	 * 更新文件
+	 * @param file
+	 * @return
+	 */
+	@RequestMapping(method = RequestMethod.POST, value = "/files/{filekey}")
+	public ServerResponse update(@PathVariable("filekey") String filekey
+			,@RequestParam("file") MultipartFile file,@RequestParam("userCode") String userCode) {
+		try {
+			FileInfo fileInfo = new FileInfo();
+			fileInfo.setFile(file.getInputStream());
+			fileInfo.setFileKey(filekey);
+			String fileSuffix = file.getOriginalFilename().substring(
+					file.getOriginalFilename().lastIndexOf(".") + 1).toLowerCase();
+			fileInfo.setFileSuffix(fileSuffix);
+			fileInfo.setFileSize(file.getSize());
+			fileInfo.setFileName(file.getOriginalFilename());
+			fileManager.updateFile(fileInfo,userCode);
+			return ServerResponse.success();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ServerResponse.failure(Constants.Error.DEFAULT.eval(), e.getMessage());
+		}
 	}
 	
 }
