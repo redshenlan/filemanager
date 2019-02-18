@@ -1,5 +1,7 @@
 package com.indigo.filemanager.bus.service;
 
+import java.io.InputStream;
+
 import com.indigo.filemanager.persistence.vo.FileInfo;
 
 /**
@@ -38,4 +40,12 @@ public interface FileManager {
 	 * @throws Exception
 	 */
 	public void updateFile(FileInfo fileInfo,String userCode) throws Exception;
+	
+	/**
+	 * 根据filekey获取pdf文件的输入流
+	 * @param filekey
+	 * @return
+	 * @throws Exception
+	 */
+	public InputStream getFileFdf(String filekey) throws Exception;
 }
