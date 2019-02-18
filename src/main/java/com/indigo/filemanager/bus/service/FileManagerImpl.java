@@ -18,9 +18,9 @@ import com.indigo.filemanager.bus.domain.entity.Menu;
 import com.indigo.filemanager.bus.domain.entity.User;
 import com.indigo.filemanager.common.Constants;
 import com.indigo.filemanager.common.util.UUIDUtils;
-import com.indigo.filemanager.persistence.FileUtils;
-import com.indigo.filemanager.persistence.vo.FileInfo;
-import com.indigo.filemanager.persistence.vo.SaveFileResult;
+import com.indigo.filemanager.common.persistence.FileUtils;
+import com.indigo.filemanager.common.persistence.vo.FileInfo;
+import com.indigo.filemanager.common.persistence.vo.SaveFileResult;
 import com.indigo.filemanager.service.FileTransferService;
 
 /**

@@ -2,7 +2,7 @@ package com.indigo.filemanager.bus.service;
 
 import java.io.InputStream;
 
-import com.indigo.filemanager.persistence.vo.FileInfo;
+import com.indigo.filemanager.common.persistence.vo.FileInfo;
 
 /**
  * @Description:
