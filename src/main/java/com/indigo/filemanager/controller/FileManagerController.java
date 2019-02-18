@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.indigo.filemanager.bus.service.FileManager;
 import com.indigo.filemanager.common.Constants;
 import com.indigo.filemanager.common.ServerResponse;
-import com.indigo.filemanager.common.UUIDUtils;
+import com.indigo.filemanager.common.util.UUIDUtils;
 import com.indigo.filemanager.persistence.vo.FileInfo;
 
 /**

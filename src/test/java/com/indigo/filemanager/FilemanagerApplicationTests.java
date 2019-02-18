@@ -41,7 +41,7 @@ public class FilemanagerApplicationTests {
 	
 	@Test
 	public void userRepositoryTest() {
-		User user = userRepository.findByUserCodeAndValid("010101","Y");
+		User user = userRepository.findByAccessKeyIdAndValid("010101","Y");
 		System.out.println(user.getUserName());
 	}
 	

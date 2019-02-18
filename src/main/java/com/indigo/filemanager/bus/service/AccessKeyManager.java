@@ -1,9 +1,9 @@
 package com.indigo.filemanager.bus.service;
 
-import com.indigo.filemanager.bus.domain.entity.AccessKey;
+import com.indigo.filemanager.bus.domain.entity.User;
 
 public interface AccessKeyManager {
 	
-	public AccessKey findByAccessKeyId(String accessKeyId);
+	public User findByAccessKeyId(String accessKeyId);
 
 }
