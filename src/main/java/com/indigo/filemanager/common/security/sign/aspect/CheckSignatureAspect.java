@@ -1,6 +1,7 @@
 package com.indigo.filemanager.common.security.sign.aspect;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -21,6 +22,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.indigo.filemanager.bus.domain.entity.User;
 import com.indigo.filemanager.bus.service.AccessKeyManager;
+import com.indigo.filemanager.common.security.sign.annotation.CurrentUser;
 import com.indigo.filemanager.common.security.sign.exception.CheckSignatureFailureException;
 import com.indigo.filemanager.common.security.sign.exception.SignatureExceptionEnum;
 import com.indigo.filemanager.common.util.HMACSHA1EncryptUtil;
@@ -71,11 +73,11 @@ public class CheckSignatureAspect {
 		
 		String accessKeyId = requestAuth[0].replace(ACCESSKEYID_PREFIX, "");
 		// 根据AccessKeyId查询AccessKeySecret
-		User accessKey = accessKeyManager.findByAccessKeyId(accessKeyId);
-		if(null == accessKey) {
+		User user = accessKeyManager.findByAccessKeyId(accessKeyId);
+		if(null == user) {
 			throw new CheckSignatureFailureException(SignatureExceptionEnum.NO_MATCHED_ACCESSKEY);
 		}
-		String accessKeySecret = accessKey.getAccessKeySecret();
+		String accessKeySecret = user.getAccessKeySecret();
 		
 		String requestSignature = requestAuth[1];
 		
@@ -102,7 +104,21 @@ public class CheckSignatureAspect {
 			throw new CheckSignatureFailureException(SignatureExceptionEnum.SIGNATURE_CHECK_FAILURE);
 		}
 		
-		return pjp.proceed();
+		boolean needModifyParameter = false;
+        Parameter[] parameters = method.getParameters();
+        Object[] pjpArgs = pjp.getArgs();
+        for(int i = 0; i < parameters.length; i++) {
+        	if(parameters[i].isAnnotationPresent(CurrentUser.class)) {
+        		needModifyParameter = true;
+        		pjpArgs[i] = user;
+        	}
+        }
+		
+		if(needModifyParameter) {
+			return pjp.proceed(pjpArgs);
+		} else {
+			return pjp.proceed();
+		}
 	}
     		
 
