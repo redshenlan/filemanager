@@ -31,11 +31,10 @@ public class HMACSHA1EncryptUtil {
 			// 完成 Mac 操作
 			byte[] rawHmac = mac.doFinal(data.getBytes());
 			result = Base64.encodeBase64(rawHmac);
-
 		} catch (NoSuchAlgorithmException e) {
-			System.err.println(e.getMessage());
+			return null;
 		} catch (InvalidKeyException e) {
-			System.err.println(e.getMessage());
+			return null;
 		}
 		if (null != result) {
 			return new String(result);

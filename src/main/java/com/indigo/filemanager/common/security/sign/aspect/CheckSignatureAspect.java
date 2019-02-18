@@ -100,7 +100,7 @@ public class CheckSignatureAspect {
 		
 		String signature = HMACSHA1EncryptUtil.genHMAC(requestVerb + "\n" + requestUri + "\n" + requestDate + "\n", accessKeySecret);
 		// 失败时抛出校验失败的异常
-		if(!signature.equals(requestSignature)) {
+		if(!requestSignature.equals(signature)) {
 			throw new CheckSignatureFailureException(SignatureExceptionEnum.SIGNATURE_CHECK_FAILURE);
 		}
 		
