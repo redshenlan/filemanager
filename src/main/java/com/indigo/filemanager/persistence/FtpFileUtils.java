@@ -83,7 +83,7 @@ public class FtpFileUtils implements FileUtils {
             ftpClient.storeFile(fileName, inputStream);
             inputStream.close();
             ftpClient.logout();
-            return SaveFileResult.ok(fileInfo.getFileKey()).message("上传文件成功").file(inputStream).build();
+            return SaveFileResult.ok(fileInfo.getFileKey()).message("上传文件成功").build();
         }catch (Exception e) {
             e.printStackTrace();
         }finally{
