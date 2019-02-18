@@ -12,7 +12,9 @@ import java.io.OutputStream;
  */
 @Getter
 public class SaveFileResult {
-    private InputStream file;
+    /**
+     * 文件下载
+     */
     private OutputStream downFile;
     /**
      * 保存操作是否成功
@@ -51,11 +53,6 @@ public class SaveFileResult {
 
     public SaveFileResult fileKey(String fileKey) {
         this.fileKey = fileKey;
-        return this;
-    }
-
-    public SaveFileResult file(InputStream file) {
-        this.file = file;
         return this;
     }
 
