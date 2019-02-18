@@ -1,14 +1,11 @@
-package com.indigo.filemanager.persistence;
+package com.indigo.filemanager.common.persistence;
 
-import com.indigo.filemanager.persistence.vo.FileInfo;
-import com.indigo.filemanager.persistence.vo.SaveFileResult;
+import com.indigo.filemanager.common.persistence.vo.FileInfo;
+import com.indigo.filemanager.common.persistence.vo.SaveFileResult;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.NotNull;
 import java.io.ByteArrayOutputStream;

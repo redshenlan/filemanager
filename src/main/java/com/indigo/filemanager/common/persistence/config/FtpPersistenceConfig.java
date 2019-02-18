@@ -1,7 +1,7 @@
-package com.indigo.filemanager.persistence.config;
+package com.indigo.filemanager.common.persistence.config;
 
-import com.indigo.filemanager.persistence.FileUtils;
-import com.indigo.filemanager.persistence.FtpFileUtils;
+import com.indigo.filemanager.common.persistence.FileUtils;
+import com.indigo.filemanager.common.persistence.FtpFileUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;

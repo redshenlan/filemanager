@@ -1,7 +1,7 @@
-package com.indigo.filemanager.persistence;
+package com.indigo.filemanager.common.persistence;
 
-import com.indigo.filemanager.persistence.vo.FileInfo;
-import com.indigo.filemanager.persistence.vo.SaveFileResult;
+import com.indigo.filemanager.common.persistence.vo.FileInfo;
+import com.indigo.filemanager.common.persistence.vo.SaveFileResult;
 
 import java.util.List;
 

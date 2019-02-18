@@ -1,4 +1,4 @@
-package com.indigo.filemanager.persistence.vo;
+package com.indigo.filemanager.common.persistence.vo;
 
 import lombok.Data;
 

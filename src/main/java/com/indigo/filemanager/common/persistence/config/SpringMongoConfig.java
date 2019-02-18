@@ -1,7 +1,7 @@
-package com.indigo.filemanager.persistence.config;
+package com.indigo.filemanager.common.persistence.config;
 
-import com.indigo.filemanager.persistence.FileUtils;
-import com.indigo.filemanager.persistence.MongodbFileUtils;
+import com.indigo.filemanager.common.persistence.FileUtils;
+import com.indigo.filemanager.common.persistence.MongodbFileUtils;
 import com.mongodb.*;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;

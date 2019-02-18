@@ -1,9 +1,7 @@
-package com.indigo.filemanager.persistence;
+package com.indigo.filemanager.common.persistence;
 
-import com.indigo.filemanager.persistence.vo.FileInfo;
-import com.indigo.filemanager.persistence.vo.SaveFileResult;
-import com.mongodb.BasicDBObject;
-import com.mongodb.client.ClientSession;
+import com.indigo.filemanager.common.persistence.vo.FileInfo;
+import com.indigo.filemanager.common.persistence.vo.SaveFileResult;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBuckets;
@@ -12,7 +10,6 @@ import com.mongodb.client.gridfs.GridFSUploadStream;
 import com.mongodb.client.gridfs.model.GridFSDownloadOptions;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.mongodb.client.model.Filters;
-import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
