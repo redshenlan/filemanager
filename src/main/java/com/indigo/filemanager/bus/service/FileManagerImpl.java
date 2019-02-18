@@ -17,7 +17,7 @@ import com.indigo.filemanager.bus.domain.entity.FileRecord;
 import com.indigo.filemanager.bus.domain.entity.Menu;
 import com.indigo.filemanager.bus.domain.entity.User;
 import com.indigo.filemanager.common.Constants;
-import com.indigo.filemanager.common.UUIDUtils;
+import com.indigo.filemanager.common.util.UUIDUtils;
 import com.indigo.filemanager.persistence.FileUtils;
 import com.indigo.filemanager.persistence.vo.FileInfo;
 import com.indigo.filemanager.persistence.vo.SaveFileResult;
@@ -52,7 +52,7 @@ public class FileManagerImpl implements FileManager{
 	 */
 	public void uploadFile(FileInfo fileInfo,String userCode) throws Exception{
 		//校验用户？？
-		User user = userRepository.findByUserCodeAndValid(userCode,"Y");
+		User user = userRepository.findByAccessKeyIdAndValid(userCode,"Y");
 		if(user==null){
 			throw new RuntimeException("无效用户");
 		}
@@ -158,7 +158,7 @@ public class FileManagerImpl implements FileManager{
 	 */
 	public FileInfo downloadFile(String filekey,String userCode) throws Exception{
 		//校验用户？？
-		User user = userRepository.findByUserCodeAndValid(userCode,"Y");
+		User user = userRepository.findByAccessKeyIdAndValid(userCode,"Y");
 		if(user==null){
 			throw new RuntimeException("无效用户");
 		}
@@ -198,7 +198,7 @@ public class FileManagerImpl implements FileManager{
 	 */
 	public void deleteFile(String filekey,String userCode) throws Exception{
 		//校验用户？？
-		User user = userRepository.findByUserCodeAndValid(userCode,"Y");
+		User user = userRepository.findByAccessKeyIdAndValid(userCode,"Y");
 		if(user==null){
 			throw new RuntimeException("无效用户");
 		}
@@ -248,7 +248,7 @@ public class FileManagerImpl implements FileManager{
 	 */
 	public void updateFile(FileInfo fileInfo,String userCode) throws Exception{
 		//校验用户？？
-		User user = userRepository.findByUserCodeAndValid(userCode,"Y");
+		User user = userRepository.findByAccessKeyIdAndValid(userCode,"Y");
 		if(user==null){
 			throw new RuntimeException("无效用户");
 		}
@@ -329,5 +329,16 @@ public class FileManagerImpl implements FileManager{
 				tempStream.close();
 			}
 		}
+	}
+	
+	/**
+	 * 根据filekey获取pdf文件的输入流
+	 * @param filekey
+	 * @return
+	 * @throws Exception
+	 */
+	public InputStream getFileFdf(String filekey) throws Exception{
+		
+		return null;
 	}
 }

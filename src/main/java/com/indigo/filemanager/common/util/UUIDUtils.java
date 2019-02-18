@@ -1,4 +1,4 @@
-package com.indigo.filemanager.common;
+package com.indigo.filemanager.common.util;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;

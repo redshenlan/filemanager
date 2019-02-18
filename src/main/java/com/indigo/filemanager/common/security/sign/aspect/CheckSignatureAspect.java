@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import com.indigo.filemanager.bus.domain.entity.AccessKey;
+import com.indigo.filemanager.bus.domain.entity.User;
 import com.indigo.filemanager.bus.service.AccessKeyManager;
 import com.indigo.filemanager.common.security.sign.exception.CheckSignatureFailureException;
 import com.indigo.filemanager.common.security.sign.exception.SignatureExceptionEnum;
@@ -61,7 +61,7 @@ public class CheckSignatureAspect {
 		
 		String accessKeyId = requestAuth[0].replace(AccessKeyId_Prefix, "");
 		// 根据AccessKeyId查询AccessKeySecret
-		AccessKey accessKey = accessKeyManager.findByAccessKeyId(accessKeyId);
+		User accessKey = accessKeyManager.findByAccessKeyId(accessKeyId);
 		if(null == accessKey) {
 			throw new CheckSignatureFailureException(SignatureExceptionEnum.NoMatchAccessKey);
 		}

@@ -24,10 +24,13 @@ public class User {
 	private Long id;
 	
 	@Column(length=20)
-	private String userCode;//用户代码
+	private String accessKeyId;//用户代码
+	
+	@Column(length=32)
+	private String accessKeySecret;//密钥
 	
 	@Column(length=50)
-	private String userName;//用户代码
+	private String userName;//用户名称
 	
 	@Column(length=20)
 	private String businessSystemCode;//业务系统代码

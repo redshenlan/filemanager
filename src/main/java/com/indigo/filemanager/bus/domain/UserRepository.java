@@ -15,9 +15,10 @@ public interface UserRepository extends JpaRepository<User, Long>{
 
 	/**
 	 * 根据用户代码查询用户
-	 * @param userCode 用户代码
+	 * @param accessKeyId 用户代码
 	 * @param valid 有效标志
 	 * @return
 	 */
-	public User findByUserCodeAndValid(String userCode,String valid);
+	public User findByAccessKeyIdAndValid(String accessKeyId,String valid);
+	
 }
