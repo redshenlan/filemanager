@@ -47,8 +47,12 @@ public class CheckSignatureAspect {
 	
 	@Around("checkSignaturePointcut()")
     public Object execute(ProceedingJoinPoint pjp) throws Throwable {
-		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder
-				.getRequestAttributes()).getRequest();
+		ServletRequestAttributes servletRequestAttributes = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes());
+		if(null == servletRequestAttributes) {
+			throw new CheckSignatureFailureException(SignatureExceptionEnum.NoHttpRequest);
+		}
+		HttpServletRequest request = servletRequestAttributes.getRequest();
+		
 		String requestAuthorization = request.getHeader(Header_Authorization);
 		if(StringUtils.isEmpty(requestAuthorization)) {
 			throw new CheckSignatureFailureException(SignatureExceptionEnum.NoSignatureInfo);
@@ -76,6 +80,8 @@ public class CheckSignatureAspect {
         	requestVerb = "GET";
         } else if (method.isAnnotationPresent(DeleteMapping.class)) {
         	requestVerb = "DELETE";
+        } else {
+        	throw new CheckSignatureFailureException(SignatureExceptionEnum.InvalidHttpMethod);
         }
         String requestUri = request.getRequestURI();
 		String requestDate = request.getHeader(Header_Date);
