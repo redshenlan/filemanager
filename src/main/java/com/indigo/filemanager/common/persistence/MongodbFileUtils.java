@@ -23,6 +23,21 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+/**
+ * 该类是持久化接口类 {@link com.indigo.filemanager.common.persistence.FileUtils}
+ * mongodb 接口调用方法的实现。输入参数 {@link com.indigo.filemanager.common.persistence.vo.FileInfo}
+ * 进行统一参数处理。
+ * 主要方法有:
+ *  批量保存 saveBatchFile
+ *  保存文件 saveFile
+ *  获取文件 getFile
+ *  更新文件 updateFile
+ *  删除文件 deleteFile
+ * @author lihonglin
+ * @since 1.0
+ * @time 2019-02-19
+ */
 @Log4j
 public class MongodbFileUtils implements FileUtils {
     @Autowired
