@@ -10,6 +10,7 @@ import com.mongodb.client.gridfs.GridFSUploadStream;
 import com.mongodb.client.gridfs.model.GridFSDownloadOptions;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.mongodb.client.model.Filters;
+import lombok.extern.log4j.Log4j;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -22,7 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-
+@Log4j
 public class MongodbFileUtils implements FileUtils {
     @Autowired
     private MongoClient client;
@@ -54,7 +55,7 @@ public class MongodbFileUtils implements FileUtils {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Mongodb保存文件失败："+e.getMessage(),e.getCause());
             gridFSUploadStream.abort();
         } finally {
             gridFSUploadStream.close();
