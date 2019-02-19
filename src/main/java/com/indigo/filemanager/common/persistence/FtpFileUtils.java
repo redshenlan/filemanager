@@ -2,6 +2,7 @@ package com.indigo.filemanager.common.persistence;
 
 import com.indigo.filemanager.common.persistence.vo.FileInfo;
 import com.indigo.filemanager.common.persistence.vo.SaveFileResult;
+import lombok.extern.log4j.Log4j;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
@@ -17,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-
+@Log4j
 public class FtpFileUtils implements FileUtils {
     //ftp服务器地址
     @Value("${ftp.hostname}")
@@ -40,18 +41,18 @@ public class FtpFileUtils implements FileUtils {
         ftpClient = new FTPClient();
         ftpClient.setControlEncoding("utf-8");
         try {
-            System.out.println("connecting...ftp服务器:"+this.hostname+":"+this.port);
+            log.info("connecting...ftp服务器:"+this.hostname+":"+this.port);
             ftpClient.connect(hostname, port); //连接ftp服务器
             ftpClient.login(username, password); //登录ftp服务器
             int replyCode = ftpClient.getReplyCode(); //是否成功登录服务器
             if(!FTPReply.isPositiveCompletion(replyCode)){
-                System.out.println("connect failed...ftp服务器:"+this.hostname+":"+this.port);
+                log.info("connect failed...ftp服务器:"+this.hostname+":"+this.port);
             }
-            System.out.println("connect successfu...ftp服务器:"+this.hostname+":"+this.port);
+            log.info("connect successfu...ftp服务器:"+this.hostname+":"+this.port);
         }catch (MalformedURLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
     }
 
@@ -69,7 +70,7 @@ public class FtpFileUtils implements FileUtils {
     public SaveFileResult saveFile(FileInfo fileInfo) {
         InputStream inputStream = null;
         try{
-            System.out.println("开始上传文件");
+            log.info("开始上传文件");
             inputStream = fileInfo.getFile();
             initFtpClient();
             ftpClient.setFileType(ftpClient.BINARY_FILE_TYPE);
@@ -145,17 +146,16 @@ public class FtpFileUtils implements FileUtils {
             ftpClient.dele(fileName);
             ftpClient.logout();
             flag = true;
-            System.out.println("删除文件成功");
+            log.info("删除文件成功");
             return SaveFileResult.ok(fileInfo.getFileKey()).message("删除文件成功").build();
         } catch (Exception e) {
-            System.out.println("删除文件失败");
-            e.printStackTrace();
+            log.error("删除文件失败"+e.getMessage(),e.getCause());
         } finally {
             if(ftpClient.isConnected()){
                 try{
                     ftpClient.disconnect();
                 }catch(IOException e){
-                    e.printStackTrace();
+                    log.error("ftp连接关闭失败！"+e.getMessage(),e.getCause());
                 }
             }
         }
@@ -199,7 +199,7 @@ public class FtpFileUtils implements FileUtils {
                     if (makeDirectory(subDirectory)) {
                         changeWorkingDirectory(subDirectory);
                     } else {
-                        System.out.println("创建目录[" + subDirectory + "]失败");
+                        log.info("创建目录[" + subDirectory + "]失败");
                         changeWorkingDirectory(subDirectory);
                     }
                 } else {
@@ -223,10 +223,9 @@ public class FtpFileUtils implements FileUtils {
         try {
             flag = ftpClient.changeWorkingDirectory(directory);
             if (flag) {
-                System.out.println("进入文件夹" + directory + " 成功！");
-
+                log.info("进入文件夹" + directory + " 成功！");
             } else {
-                System.out.println("进入文件夹" + directory + " 失败！开始创建文件夹");
+                log.info("进入文件夹" + directory + " 失败！开始创建文件夹");
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -248,10 +247,10 @@ public class FtpFileUtils implements FileUtils {
         try {
             flag = ftpClient.makeDirectory(dir);
             if (flag) {
-                System.out.println("创建文件夹" + dir + " 成功！");
+                log.info("创建文件夹" + dir + " 成功！");
 
             } else {
-                System.out.println("创建文件夹" + dir + " 失败！");
+                log.info("创建文件夹" + dir + " 失败！");
             }
         } catch (Exception e) {
             e.printStackTrace();
