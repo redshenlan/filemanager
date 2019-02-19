@@ -10,7 +10,7 @@ import com.mongodb.client.gridfs.GridFSUploadStream;
 import com.mongodb.client.gridfs.model.GridFSDownloadOptions;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.mongodb.client.model.Filters;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -38,7 +38,7 @@ import java.util.List;
  * @since 1.0
  * @time 2019-02-19
  */
-@Log4j
+@Slf4j
 public class MongodbFileUtils implements FileUtils {
     @Autowired
     private MongoClient client;

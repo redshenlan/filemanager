@@ -2,7 +2,7 @@ package com.indigo.filemanager.common.persistence;
 
 import com.indigo.filemanager.common.persistence.vo.FileInfo;
 import com.indigo.filemanager.common.persistence.vo.SaveFileResult;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
@@ -18,7 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-@Log4j
+
+@Slf4j
 public class FtpFileUtils implements FileUtils {
     //ftp服务器地址
     @Value("${ftp.hostname}")
