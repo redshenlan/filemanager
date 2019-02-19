@@ -2,6 +2,8 @@ package com.indigo.filemanager.common.security.sign.aspect;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -13,10 +15,6 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -45,6 +43,8 @@ public class CheckSignatureAspect {
 	private static final String ACCESSKEYID_PREFIX = "FS ";
 	
 	private static final int REQUESTAUTH_ARRAY_MIN_LENGTH = 2;
+	
+	private static final List<String> ALLOW_REQUEST_METHOD  = Arrays.asList("PUT", "POST", "GET", "DELETE");
 	
 	@Resource
 	private AccessKeyManager accessKeyManager;
@@ -83,16 +83,8 @@ public class CheckSignatureAspect {
 		
 		MethodSignature methodSignature = (MethodSignature) pjp.getSignature();
         Method method = methodSignature.getMethod();
-        String requestVerb = "";
-        if (method.isAnnotationPresent(PutMapping.class)) {
-        	requestVerb = "PUT";
-        } else if (method.isAnnotationPresent(PostMapping.class)) {
-        	requestVerb = "POST";
-        } else if (method.isAnnotationPresent(GetMapping.class)) {
-        	requestVerb = "GET";
-        } else if (method.isAnnotationPresent(DeleteMapping.class)) {
-        	requestVerb = "DELETE";
-        } else {
+        String requestVerb = request.getMethod();
+        if (!ALLOW_REQUEST_METHOD.contains(requestVerb)) {
         	throw new CheckSignatureFailureException(SignatureExceptionEnum.INVALID_HTTP_METHOD);
         }
         String requestUri = request.getRequestURI();
