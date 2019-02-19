@@ -25,7 +25,7 @@ public class FtpFileUtils implements FileUtils {
     private String hostname = "192.168.1.249";
     //ftp服务器端口号默认为21
     @Value("${ftp.port}")
-    private Integer port = 21 ;
+    private Integer port = 21;
     //ftp登录账号
     @Value("${ftp.username}")
     private String username = "root";
@@ -34,6 +34,7 @@ public class FtpFileUtils implements FileUtils {
     private String password = "123";
 
     private FTPClient ftpClient = null;
+
     /**
      * 初始化ftp服务器
      */
@@ -41,17 +42,17 @@ public class FtpFileUtils implements FileUtils {
         ftpClient = new FTPClient();
         ftpClient.setControlEncoding("utf-8");
         try {
-            log.info("connecting...ftp服务器:"+this.hostname+":"+this.port);
+            log.info("connecting...ftp服务器:" + this.hostname + ":" + this.port);
             ftpClient.connect(hostname, port); //连接ftp服务器
             ftpClient.login(username, password); //登录ftp服务器
             int replyCode = ftpClient.getReplyCode(); //是否成功登录服务器
-            if(!FTPReply.isPositiveCompletion(replyCode)){
-                log.info("connect failed...ftp服务器:"+this.hostname+":"+this.port);
+            if (!FTPReply.isPositiveCompletion(replyCode)) {
+                log.info("connect failed...ftp服务器:" + this.hostname + ":" + this.port);
             }
-            log.info("connect successfu...ftp服务器:"+this.hostname+":"+this.port);
-        }catch (MalformedURLException e) {
+            log.info("connect successfu...ftp服务器:" + this.hostname + ":" + this.port);
+        } catch (MalformedURLException e) {
             log.error(e.getMessage());
-        }catch (IOException e) {
+        } catch (IOException e) {
             log.error(e.getMessage());
         }
     }
@@ -59,8 +60,7 @@ public class FtpFileUtils implements FileUtils {
     @Override
     public List<SaveFileResult> saveBatchFile(FileInfo[] fileInfos) {
         List<SaveFileResult> list = new ArrayList<>(16);
-        for (FileInfo fileInfo:fileInfos)
-        {
+        for (FileInfo fileInfo : fileInfos) {
             list.add(saveFile(fileInfo));
         }
         return list;
@@ -69,7 +69,7 @@ public class FtpFileUtils implements FileUtils {
     @Override
     public SaveFileResult saveFile(FileInfo fileInfo) {
         InputStream inputStream = null;
-        try{
+        try {
             log.info("开始上传文件");
             inputStream = fileInfo.getFile();
             initFtpClient();
@@ -82,17 +82,17 @@ public class FtpFileUtils implements FileUtils {
             inputStream.close();
             ftpClient.logout();
             return SaveFileResult.ok(fileInfo.getFileKey()).message("上传文件成功").build();
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        }finally{
-            if(ftpClient.isConnected()){
-                try{
+        } finally {
+            if (ftpClient.isConnected()) {
+                try {
                     ftpClient.disconnect();
-                }catch(IOException e){
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-            if(null != inputStream){
+            if (null != inputStream) {
                 try {
                     inputStream.close();
                 } catch (IOException e) {
@@ -106,14 +106,14 @@ public class FtpFileUtils implements FileUtils {
     @Override
     public SaveFileResult getFile(FileInfo fileInfo) {
         String fileName = getFileName(fileInfo);
-        OutputStream os=null;
+        OutputStream os = null;
         try {
             initFtpClient();
             //切换FTP目录
             ftpClient.changeWorkingDirectory(fileInfo.getFilepath());
             FTPFile[] ftpFiles = ftpClient.listFiles();
-            for(FTPFile file : ftpFiles){
-                if(fileName.equalsIgnoreCase(file.getName())){
+            for (FTPFile file : ftpFiles) {
+                if (fileName.equalsIgnoreCase(file.getName())) {
                     os = new ByteArrayOutputStream();
                     ftpClient.retrieveFile(file.getName(), os);
                 }
@@ -123,11 +123,11 @@ public class FtpFileUtils implements FileUtils {
             return SaveFileResult.ok(fileInfo.getFileKey()).downFile(os).message("获取文件成功").build();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally{
-            if(ftpClient.isConnected()){
-                try{
+        } finally {
+            if (ftpClient.isConnected()) {
+                try {
                     ftpClient.disconnect();
-                }catch(IOException e){
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
@@ -149,13 +149,13 @@ public class FtpFileUtils implements FileUtils {
             log.info("删除文件成功");
             return SaveFileResult.ok(fileInfo.getFileKey()).message("删除文件成功").build();
         } catch (Exception e) {
-            log.error("删除文件失败"+e.getMessage(),e.getCause());
+            log.error("删除文件失败" + e.getMessage(), e.getCause());
         } finally {
-            if(ftpClient.isConnected()){
-                try{
+            if (ftpClient.isConnected()) {
+                try {
                     ftpClient.disconnect();
-                }catch(IOException e){
-                    log.error("ftp连接关闭失败！"+e.getMessage(),e.getCause());
+                } catch (IOException e) {
+                    log.error("ftp连接关闭失败！" + e.getMessage(), e.getCause());
                 }
             }
         }
@@ -164,12 +164,12 @@ public class FtpFileUtils implements FileUtils {
 
     @NotNull
     private String getFileName(FileInfo fileInfo) {
-        return fileInfo.getFileKey()+"."+fileInfo.getFileSuffix();
+        return fileInfo.getFileKey() + "." + fileInfo.getFileSuffix();
     }
 
     @Override
     public SaveFileResult updateFile(FileInfo fileInfo) {
-        if(delteFile(fileInfo).isResult() && saveFile(fileInfo).isResult()){
+        if (delteFile(fileInfo).isResult() && saveFile(fileInfo).isResult()) {
             return SaveFileResult.ok(fileInfo.getFileKey()).message("更新文件成功").build();
 
         }
@@ -181,7 +181,7 @@ public class FtpFileUtils implements FileUtils {
         boolean success = true;
         String directory = remote + "/";
         // 如果远程目录不存在，则递归创建远程服务器目录
-        if (!directory.equalsIgnoreCase("/") && !changeWorkingDirectory(new String(directory))) {
+        if (!directory.equalsIgnoreCase("/") && !changeWorkingDirectory(directory)) {
             int start = 0;
             int end = 0;
             if (directory.startsWith("/")) {
@@ -217,6 +217,7 @@ public class FtpFileUtils implements FileUtils {
         }
         return success;
     }
+
     //改变目录路径
     private boolean changeWorkingDirectory(String directory) {
         boolean flag = true;
@@ -232,6 +233,7 @@ public class FtpFileUtils implements FileUtils {
         }
         return flag;
     }
+
     //判断ftp服务器文件是否存在
     private boolean existFile(String path) throws IOException {
         boolean flag = false;
@@ -241,6 +243,7 @@ public class FtpFileUtils implements FileUtils {
         }
         return flag;
     }
+
     //创建目录
     private boolean makeDirectory(String dir) {
         boolean flag = true;
