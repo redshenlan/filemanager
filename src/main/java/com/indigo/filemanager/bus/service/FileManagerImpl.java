@@ -21,7 +21,6 @@ import com.indigo.filemanager.common.util.UUIDUtils;
 import com.indigo.filemanager.common.persistence.FileUtils;
 import com.indigo.filemanager.common.persistence.vo.FileInfo;
 import com.indigo.filemanager.common.persistence.vo.SaveFileResult;
-import com.indigo.filemanager.service.FileTransferService;
 
 /**
  * @Description:
@@ -47,15 +46,10 @@ public class FileManagerImpl implements FileManager{
 	/**
 	 * 文件上传
 	 * @param fileInfo
-	 * @param userCode
+	 * @param user
 	 * @throws Exception 
 	 */
-	public void uploadFile(FileInfo fileInfo,String userCode) throws Exception{
-		//校验用户？？
-		User user = userRepository.findByAccessKeyIdAndValid(userCode,"Y");
-		if(user==null){
-			throw new RuntimeException("无效用户");
-		}
+	public void uploadFile(FileInfo fileInfo,User user) throws Exception{
 		ByteArrayOutputStream pdfOs = null;
 		ByteArrayInputStream pdfIs = null;
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();//复制inputstream用
@@ -70,21 +64,6 @@ public class FileManagerImpl implements FileManager{
 			baos.flush();
 			tempStream = new ByteArrayInputStream(baos.toByteArray());
 			fileInfo.setFile(new ByteArrayInputStream(baos.toByteArray()));
-			//转换pdf文件并保存
-			if(true){//??哪些可以转换pdf
-				pdfOs = (ByteArrayOutputStream)fileTransferService.transferPdf(tempStream,
-						fileInfo.getFileSuffix(), "pdf");
-				pdfIs = new ByteArrayInputStream(pdfOs.toByteArray());
-				//保存pdf文件
-				FileInfo pdfFileInfo = new FileInfo();
-				pdfFileInfo.setFile(pdfIs);
-				pdfFileInfo.setFileKey(fileInfo.getFileKey());
-				pdfFileInfo.setFileSuffix("pdf");
-				SaveFileResult resultPdf = fileUtils.saveFile(pdfFileInfo);
-				if(!resultPdf.isResult()){
-					throw new RuntimeException("文件持久化失败");
-				}
-			}
 			//保存原文件
 			SaveFileResult result = fileUtils.saveFile(fileInfo);
 			if(!result.isResult()){
@@ -128,6 +107,25 @@ public class FileManagerImpl implements FileManager{
 			fileOperateRecord.setOperaterTime(now);
 			fileOperateRecord.setOperaterType(Constants.OperaterType.CREATE.eval());
 			fileOperateRecordRepository.save(fileOperateRecord);
+			//转换pdf文件并保存，转换失败不影响文件上传成功
+			try{
+				if(true){//??哪些可以转换pdf
+					pdfOs = (ByteArrayOutputStream)fileTransferService.transferPdf(tempStream,
+							fileInfo.getFileSuffix(), "pdf");
+					pdfIs = new ByteArrayInputStream(pdfOs.toByteArray());
+					//保存pdf文件
+					FileInfo pdfFileInfo = new FileInfo();
+					pdfFileInfo.setFile(pdfIs);
+					pdfFileInfo.setFileKey(fileInfo.getFileKey());
+					pdfFileInfo.setFileSuffix("pdf");
+					SaveFileResult resultPdf = fileUtils.saveFile(pdfFileInfo);
+					if(!resultPdf.isResult()){
+						throw new RuntimeException("文件持久化失败");
+					}
+				}
+			}catch(Exception ex){
+				
+			}
 		}catch(Exception ex){
 			throw ex;
 		}finally{
