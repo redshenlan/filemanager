@@ -14,7 +14,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.indigo.filemanager.bus.domain.UserRepository;
 import com.indigo.filemanager.bus.domain.entity.User;
 import com.indigo.filemanager.bus.service.FileManager;
-import com.indigo.filemanager.service.FileTransferService;
+import com.indigo.filemanager.bus.service.FileTransferService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest

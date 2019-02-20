@@ -16,7 +16,7 @@
 
 package com.indigo.filemanager.controller;
 
-import com.indigo.filemanager.service.FileTransferService;
+import com.indigo.filemanager.bus.service.FileTransferService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -1,4 +1,4 @@
-package com.indigo.filemanager.service;
+package com.indigo.filemanager.bus.service;
 
 import com.artofsolving.jodconverter.BasicDocumentFormatRegistry;
 import com.artofsolving.jodconverter.DocumentFamily;
