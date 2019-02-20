@@ -10,25 +10,28 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.indigo.filemanager.bus.domain.entity.User;
 import com.indigo.filemanager.bus.service.FileManager;
 import com.indigo.filemanager.common.Constants;
 import com.indigo.filemanager.common.ServerResponse;
-import com.indigo.filemanager.common.util.UUIDUtils;
 import com.indigo.filemanager.common.persistence.vo.FileInfo;
+import com.indigo.filemanager.common.security.sign.annotation.CurrentUser;
+import com.indigo.filemanager.common.security.sign.annotation.NeedCheckSignature;
+import com.indigo.filemanager.common.util.UUIDUtils;
 
 /**
  * @Description:文件管理
  * @author: qiaoyuxi
  * @time: 2019年2月11日 上午10:57:17
  */
-@RestController
+@RestController(value = "/files")
 public class FileManagerController {
 
 	@Autowired
@@ -39,18 +42,20 @@ public class FileManagerController {
 	 * @param file
 	 * @return
 	 */
-	@RequestMapping(method = RequestMethod.POST, value = "/files")
-	public ServerResponse upload(@RequestParam("file") MultipartFile file,@RequestParam("userCode") String userCode) {
+	@PostMapping(value = "/{filename}")
+	@NeedCheckSignature
+	public ServerResponse upload(@CurrentUser User user,@PathVariable("filename") String filename
+			,@RequestParam("file") MultipartFile file) {
 		try {
 			FileInfo fileInfo = new FileInfo();
 			fileInfo.setFile(file.getInputStream());
 			fileInfo.setFileKey(UUIDUtils.getUUID());
-			String fileSuffix = file.getOriginalFilename().substring(
-					file.getOriginalFilename().lastIndexOf(".") + 1).toLowerCase();
+			String fileSuffix = filename.substring(
+					filename.lastIndexOf(".") + 1).toLowerCase();
 			fileInfo.setFileSuffix(fileSuffix);
 			fileInfo.setFileSize(file.getSize());
-			fileInfo.setFileName(file.getOriginalFilename());
-			fileManager.uploadFile(fileInfo,userCode);
+			fileInfo.setFileName(filename);
+			fileManager.uploadFile(fileInfo,user);
 			Map<String,Object> dataMap = new HashMap<String,Object>();
 			dataMap.put("filekey", fileInfo.getFileKey());
 			return ServerResponse.success(dataMap);
@@ -66,7 +71,7 @@ public class FileManagerController {
 	 * @return
 	 * @throws Exception 
 	 */
-	@RequestMapping(method = RequestMethod.GET, value = "/files/{filekey}")
+	@GetMapping(value = "/{filekey}")
 	public ResponseEntity<byte[]> download(@PathVariable("filekey") String filekey
 			,@RequestParam("userCode") String userCode) throws Exception {
 		FileInfo fileInfo = fileManager.downloadFile(filekey,userCode);
@@ -82,7 +87,7 @@ public class FileManagerController {
 	 * @param file
 	 * @return
 	 */
-	@RequestMapping(method = RequestMethod.POST, value = "/files/{filekey}")
+	@PostMapping(value = "/files/{filekey}")
 	public ServerResponse update(@PathVariable("filekey") String filekey
 			,@RequestParam("file") MultipartFile file,@RequestParam("userCode") String userCode) {
 		try {

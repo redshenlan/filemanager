@@ -2,6 +2,8 @@ package com.indigo.filemanager.bus.service;
 
 import java.io.InputStream;
 
+import com.indigo.filemanager.bus.domain.entity.User;
+import com.indigo.filemanager.bus.exception.FileOperateFailureException;
 import com.indigo.filemanager.common.persistence.vo.FileInfo;
 
 /**
@@ -15,7 +17,7 @@ public interface FileManager {
 	 * 文件上传
 	 * @param fileInfo
 	 */
-	public void uploadFile(FileInfo fileInfo,String userCode) throws Exception;
+	public void uploadFile(FileInfo fileInfo,User user) throws FileOperateFailureException;
 	
 	/**
 	 * 文件下载
