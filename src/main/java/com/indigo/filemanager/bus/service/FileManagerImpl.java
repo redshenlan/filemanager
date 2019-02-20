@@ -2,6 +2,7 @@ package com.indigo.filemanager.bus.service;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 
@@ -16,11 +17,13 @@ import com.indigo.filemanager.bus.domain.entity.FileOperateRecord;
 import com.indigo.filemanager.bus.domain.entity.FileRecord;
 import com.indigo.filemanager.bus.domain.entity.Menu;
 import com.indigo.filemanager.bus.domain.entity.User;
+import com.indigo.filemanager.bus.exception.FileOperateFailureException;
+import com.indigo.filemanager.bus.exception.FileOperateFailureExceptionEnum;
 import com.indigo.filemanager.common.Constants;
-import com.indigo.filemanager.common.util.UUIDUtils;
 import com.indigo.filemanager.common.persistence.FileUtils;
 import com.indigo.filemanager.common.persistence.vo.FileInfo;
 import com.indigo.filemanager.common.persistence.vo.SaveFileResult;
+import com.indigo.filemanager.common.util.UUIDUtils;
 
 /**
  * @Description:
@@ -49,7 +52,7 @@ public class FileManagerImpl implements FileManager{
 	 * @param user
 	 * @throws Exception 
 	 */
-	public void uploadFile(FileInfo fileInfo,User user) throws Exception{
+	public void uploadFile(FileInfo fileInfo,User user) throws FileOperateFailureException{
 		ByteArrayOutputStream pdfOs = null;
 		ByteArrayInputStream pdfIs = null;
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();//复制inputstream用
@@ -67,7 +70,7 @@ public class FileManagerImpl implements FileManager{
 			//保存原文件
 			SaveFileResult result = fileUtils.saveFile(fileInfo);
 			if(!result.isResult()){
-				throw new RuntimeException("文件持久化失败");
+				throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_PERSISTENCE_FAIL);
 			}
 			//保存关系数据库信息
 			//校验二级目录（根目录在创建业务系统时，自动创建）
@@ -126,24 +129,30 @@ public class FileManagerImpl implements FileManager{
 			}catch(Exception ex){
 				
 			}
-		}catch(Exception ex){
+		}catch(FileOperateFailureException ex){
 			throw ex;
+		}catch(IOException ex){
+			throw new FileOperateFailureException(FileOperateFailureExceptionEnum.IO_ERROR,ex.getMessage());
 		}finally{
-			//关闭流
-			if(fileInfo.getFile()!=null){
-				fileInfo.getFile().close();
-			}
-			if(pdfOs!=null){
-				pdfOs.close();
-			}
-			if(pdfIs!=null){
-				pdfIs.close();
-			}
-			if(baos!=null){
-				baos.close();
-			}
-			if(tempStream!=null){
-				tempStream.close();
+			try{
+				//关闭流
+				if(fileInfo.getFile()!=null){
+					fileInfo.getFile().close();
+				}
+				if(pdfOs!=null){
+					pdfOs.close();
+				}
+				if(pdfIs!=null){
+					pdfIs.close();
+				}
+				if(baos!=null){
+					baos.close();
+				}
+				if(tempStream!=null){
+					tempStream.close();
+				}
+			}catch(IOException ex){
+				throw new FileOperateFailureException(FileOperateFailureExceptionEnum.IO_ERROR,ex.getMessage());
 			}
 		}
 	}
