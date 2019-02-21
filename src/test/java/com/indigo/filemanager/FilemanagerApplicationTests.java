@@ -36,7 +36,8 @@ public class FilemanagerApplicationTests {
 //		BufferedInputStream bis = new BufferedInputStream(new FileInputStream("E:\\dgy\\projects\\filemanager\\filemanager\\123.doc"));
 //		InputStream in = new FileInputStream(new File("E:\\dgy\\projects\\filemanager\\filemanager\\123.doc"));
 		InputStream inputStream = new FileInputStream("D:\\ftp\\1546422516097.doc");
-		fileTransferService.transferPdf(inputStream,"doc","pdf");
+		OutputStream outputStream=fileTransferService.transferPdf(inputStream,"doc","pdf");
+		outputStream.close();
 //		outputStream.close();
 	}
 	

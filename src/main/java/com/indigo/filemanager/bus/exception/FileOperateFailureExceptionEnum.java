@@ -8,7 +8,14 @@ public enum FileOperateFailureExceptionEnum {
 
 	//文件持久化失败
 	FILE_PERSISTENCE_FAIL,
-	
+	//转换原文件不存在
+	FILE_FILENOEXISTS,
+	//不支持转pdf
+	FILE_TRANSFER_NOTSUPPORT_PDF,
+	//转pdf失败
+	FILE_TRANSFER_FAIL,
+	//可转换pdf的文件类型配置为空
+	FILE_TRANSFER_NOCONFIG,
 	//IO出错
 	IO_ERROR;
 }

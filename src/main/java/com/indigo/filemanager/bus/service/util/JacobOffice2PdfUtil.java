@@ -1,5 +1,7 @@
 package com.indigo.filemanager.bus.service.util;
 
+import com.indigo.filemanager.bus.exception.FileOperateFailureException;
+import com.indigo.filemanager.bus.exception.FileOperateFailureExceptionEnum;
 import com.jacob.activeX.ActiveXComponent;
 import com.jacob.com.ComThread;
 import com.jacob.com.Dispatch;
@@ -83,7 +85,7 @@ public class JacobOffice2PdfUtil {
             ComThread.Release();
             return time;
         } catch (Exception e) {
-            return -1;
+            throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_TRANSFER_FAIL);
         }
     }
 
@@ -119,7 +121,7 @@ public class JacobOffice2PdfUtil {
             ComThread.Release();
             return time;
         } catch (Exception e) {
-            return -1;
+            throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_TRANSFER_FAIL);
         }
     }
 
@@ -146,8 +148,7 @@ public class JacobOffice2PdfUtil {
             ComThread.Release();
             return time;
         } catch (Exception e) {
-            System.out.println(e);
-            return -1;
+            throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_TRANSFER_FAIL);
         }
     }
 
