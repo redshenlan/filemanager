@@ -65,8 +65,9 @@ public class MongodbFileUtils implements FileUtils {
         InputStream inputStream = fileInfo.getFile();
         byte[] buffer = new byte[1024];
         try {
-            while (inputStream.read(buffer) > 0) {
-                gridFSUploadStream.write(buffer);
+            int len = 0;
+            while ((len = inputStream.read(buffer)) > 0) {
+                gridFSUploadStream.write(buffer,0,len);
             }
 
         } catch (IOException e) {
