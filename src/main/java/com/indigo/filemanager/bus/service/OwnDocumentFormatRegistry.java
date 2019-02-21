@@ -1,4 +1,4 @@
-package com.indigo.filemanager.service;
+package com.indigo.filemanager.bus.service;
 
 import com.artofsolving.jodconverter.BasicDocumentFormatRegistry;
 import com.artofsolving.jodconverter.DocumentFamily;
@@ -56,6 +56,9 @@ public class OwnDocumentFormatRegistry  extends BasicDocumentFormatRegistry {
         DocumentFormat xls = new DocumentFormat("Microsoft Excel", DocumentFamily.SPREADSHEET, "application/vnd.ms-excel", "xls");
         xls.setExportFilter(DocumentFamily.SPREADSHEET, "MS Excel 97");
         this.addDocumentFormat(xls);
+        DocumentFormat xlsx = new DocumentFormat("Microsoft Excel", DocumentFamily.SPREADSHEET, "application/vnd.ms-excel", "xlsx");
+        xlsx.setExportFilter(DocumentFamily.SPREADSHEET, "MS Excel 2010");
+        this.addDocumentFormat(xlsx);
         DocumentFormat csv = new DocumentFormat("CSV", DocumentFamily.SPREADSHEET, "text/csv", "csv");
         csv.setImportOption("FilterName", "Text - txt - csv (StarCalc)");
         csv.setImportOption("FilterOptions", "44,34,0");
@@ -77,6 +80,9 @@ public class OwnDocumentFormatRegistry  extends BasicDocumentFormatRegistry {
         DocumentFormat ppt = new DocumentFormat("Microsoft PowerPoint", DocumentFamily.PRESENTATION, "application/vnd.ms-powerpoint", "ppt");
         ppt.setExportFilter(DocumentFamily.PRESENTATION, "MS PowerPoint 97");
         this.addDocumentFormat(ppt);
+        DocumentFormat pptx = new DocumentFormat("Microsoft PowerPoint", DocumentFamily.PRESENTATION, "application/vnd.ms-powerpoint", "pptx");
+        pptx.setExportFilter(DocumentFamily.PRESENTATION, "MS PowerPoint 2010");
+        this.addDocumentFormat(pptx);
         DocumentFormat odg = new DocumentFormat("OpenDocument Drawing", DocumentFamily.DRAWING, "application/vnd.oasis.opendocument.graphics", "odg");
         odg.setExportFilter(DocumentFamily.DRAWING, "draw8");
         this.addDocumentFormat(odg);
