@@ -48,7 +48,7 @@ public class JacobOffice2PdfUtil {
         return fileName.substring(splitIndex + 1);
     }
 
-    private static int word2PDF(String inputFile, String pdfFile) {
+    public static int word2PDF(String inputFile, String pdfFile) {
         try {
             ComThread.InitSTA(true);
             // 打开Word应用程序
@@ -62,7 +62,13 @@ public class JacobOffice2PdfUtil {
             // 获得Word中所有打开的文档，返回documents对象
             Dispatch docs = app.getProperty("Documents").toDispatch();
             // 调用Documents对象中Open方法打开文档，并返回打开的文档对象Document
-            Dispatch doc = Dispatch.call(docs, "Open", inputFile, false, true).toDispatch();
+//            Dispatch doc = Dispatch.invoke(
+//                    docs,
+//                    "Open",
+//                    Dispatch.Method,
+//                    new Object[] { inputFile, new Variant(false),
+//                            new Variant(false) }, new int[]{}).toDispatch();
+            Dispatch doc = Dispatch.call(docs, "Open", inputFile, false, false).toDispatch();
             Dispatch.put(doc, "TrackRevisions", new Variant(false));
             Dispatch.put(doc, "PrintRevisions", new Variant(false));
             Dispatch.put(doc, "ShowRevisions", false);
@@ -82,7 +88,7 @@ public class JacobOffice2PdfUtil {
     }
 
 
-    private static int Ex2PDF(String inputFile, String pdfFile) {
+    public static int Ex2PDF(String inputFile, String pdfFile) {
         try {
             ComThread.InitSTA(true);
             ActiveXComponent ax = new ActiveXComponent("KET.Application");
@@ -118,12 +124,12 @@ public class JacobOffice2PdfUtil {
     }
 
 
-    private static int ppt2PDF(String inputFile, String pdfFile) {
+    public static int ppt2PDF(String inputFile, String pdfFile) {
         System.out.println("开始转化PPT为PDF...");
         try {
             ComThread.InitSTA(true);
             ActiveXComponent app = new ActiveXComponent("KWPP.Application");
-            app.setProperty("Visible", false);
+//            app.setProperty("Visible", false);
             long date = new Date().getTime();
             Dispatch ppts = app.getProperty("Presentations").toDispatch();
             Dispatch ppt = Dispatch.call(ppts, "Open", inputFile, true, // ReadOnly
