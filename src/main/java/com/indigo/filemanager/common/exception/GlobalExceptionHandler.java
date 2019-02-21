@@ -1,9 +1,13 @@
 package com.indigo.filemanager.common.exception;
 
 import com.indigo.filemanager.common.ServerResponse;
+import com.indigo.filemanager.common.security.sign.exception.CheckSignatureFailureException;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
  *
@@ -17,17 +21,21 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @time 2019年2月19日15:02:58
  */
 @ControllerAdvice
+@ResponseBody
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
-    @ResponseBody
     public ServerResponse handlerException(Exception e){
         if(e instanceof BizException) {
             return ServerResponse.failure(((BizException) e).getCode(), ((BizException) e).getMsg());
-        }
-        else
-        {
+        } else {
             return ServerResponse.failure("server exception",e.getMessage());
         }
+    }
+    
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(CheckSignatureFailureException.class)
+    public ServerResponse handleCheckSignatureFailureException(CheckSignatureFailureException e) {
+        return ServerResponse.failure(e.getCode(), e.getMsg());
     }
 }

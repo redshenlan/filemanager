@@ -2,6 +2,7 @@ package com.indigo.filemanager.common.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -12,9 +13,15 @@ import lombok.Setter;
  */
 @Setter
 @Getter
+@NoArgsConstructor
 @AllArgsConstructor
 public class BizException extends RuntimeException {
-    private String code;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -5582767530267780667L;
+
+	private String code;
 
     private String msg;
 }
