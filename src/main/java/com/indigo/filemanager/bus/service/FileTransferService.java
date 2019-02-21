@@ -19,7 +19,14 @@ public class FileTransferService {
     private String excelTransferFiletype = ",xls,xlsx,";
     private String pointTransferFiletype = ",ppt,pptx,";
 
-
+    /**
+     * wps另存为方式转pdf
+     * @param inputStream
+     * @param filetype
+     * @param outFileType
+     * @return
+     * @throws IOException
+     */
     public OutputStream transferPdf(InputStream inputStream, String filetype, String outFileType) throws IOException {
         if (!canTransfer(filetype)) {
             throw new RuntimeException("不支持转为pdf");
@@ -59,6 +66,12 @@ public class FileTransferService {
         return outputStream;
     }
 
+    /**
+     * 写本地文件
+     * @param writFilePath
+     * @param inputStream
+     * @throws IOException
+     */
     private void writtoLocal(String writFilePath, InputStream inputStream) throws IOException {
         RandomAccessFile inFile = new RandomAccessFile(writFilePath, "rw");
         FileChannel inChannel = inFile.getChannel();
@@ -71,6 +84,11 @@ public class FileTransferService {
         inChannel.close();
     }
 
+    /**
+     * 是否能进行pdf转换
+     * @param filetype
+     * @return true 可以转 false不能
+     */
     public boolean canTransfer(String filetype) {
         String filetypeTemp = filetype.toLowerCase();
         if (!wordTransferFiletype.contains("," + filetypeTemp + ",") && excelTransferFiletype.contains("," + filetypeTemp + ",") && pointTransferFiletype.contains("," + filetypeTemp + ",")) {
