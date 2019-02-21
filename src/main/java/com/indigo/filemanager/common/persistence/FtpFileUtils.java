@@ -53,8 +53,10 @@ public class FtpFileUtils implements FileUtils {
             log.info("connect successfu...ftp服务器:" + this.hostname + ":" + this.port);
         } catch (MalformedURLException e) {
             log.error(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         } catch (IOException e) {
             log.error(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -74,7 +76,7 @@ public class FtpFileUtils implements FileUtils {
             log.info("开始上传文件");
             inputStream = fileInfo.getFile();
             initFtpClient();
-            ftpClient.setFileType(ftpClient.BINARY_FILE_TYPE);
+            ftpClient.setFileType(FTPClient.BINARY_FILE_TYPE);
             CreateDirecroty(fileInfo.getFilepath());
             ftpClient.makeDirectory(fileInfo.getFilepath());
             ftpClient.changeWorkingDirectory(fileInfo.getFilepath());
@@ -112,18 +114,15 @@ public class FtpFileUtils implements FileUtils {
             initFtpClient();
             //切换FTP目录
             ftpClient.changeWorkingDirectory(fileInfo.getFilepath());
-            FTPFile[] ftpFiles = ftpClient.listFiles();
-            for (FTPFile file : ftpFiles) {
-                if (fileName.equalsIgnoreCase(file.getName())) {
-                    os = new ByteArrayOutputStream();
-                    ftpClient.retrieveFile(file.getName(), os);
-                }
+            os = new ByteArrayOutputStream();
+            if(ftpClient.retrieveFile(fileName, os))
+            {
+                return SaveFileResult.fail(fileInfo.getFileKey()).message("获取文件失败！");
             }
             ftpClient.logout();
-
             return SaveFileResult.ok(fileInfo.getFileKey()).downFile(os).message("获取文件成功").build();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("获取文件失败" + e.getMessage(), e.getCause());
         } finally {
             if (ftpClient.isConnected()) {
                 try {
@@ -133,12 +132,11 @@ public class FtpFileUtils implements FileUtils {
                 }
             }
         }
-        return SaveFileResult.fail(fileInfo.getFileKey()).message("获取文件失败！");
+        return SaveFileResult.fail(fileInfo.getFileKey()).message("获取文件失败！").build();
     }
 
     @Override
     public SaveFileResult delteFile(FileInfo fileInfo) {
-        boolean flag = false;
         try {
             String fileName = getFileName(fileInfo);
             initFtpClient();
@@ -146,8 +144,6 @@ public class FtpFileUtils implements FileUtils {
             ftpClient.changeWorkingDirectory(fileInfo.getFilepath());
             ftpClient.dele(fileName);
             ftpClient.logout();
-            flag = true;
-            log.info("删除文件成功");
             return SaveFileResult.ok(fileInfo.getFileKey()).message("删除文件成功").build();
         } catch (Exception e) {
             log.error("删除文件失败" + e.getMessage(), e.getCause());
@@ -177,7 +173,13 @@ public class FtpFileUtils implements FileUtils {
         return SaveFileResult.fail(fileInfo.getFileKey()).message("更新文件失败！").build();
     }
 
-    //创建多层目录文件，如果有ftp服务器已存在该文件，则不创建，如果无，则创建
+    /**
+     * 创建多层目录文件，如果有ftp服务器已存在该文件，则不创建，如果无，则创建
+     *
+     * @param remote
+     * @return
+     * @throws IOException
+     */
     private boolean CreateDirecroty(String remote) throws IOException {
         boolean success = true;
         String directory = remote + "/";
@@ -219,9 +221,14 @@ public class FtpFileUtils implements FileUtils {
         return success;
     }
 
-    //改变目录路径
+    /**
+     * 改变目录路径
+     *
+     * @param directory
+     * @return
+     */
     private boolean changeWorkingDirectory(String directory) {
-        boolean flag = true;
+        boolean flag = false;
         try {
             flag = ftpClient.changeWorkingDirectory(directory);
             if (flag) {
@@ -235,7 +242,12 @@ public class FtpFileUtils implements FileUtils {
         return flag;
     }
 
-    //判断ftp服务器文件是否存在
+    /**
+     * 判断ftp服务器文件是否存在
+     * @param path
+     * @return
+     * @throws IOException
+     */
     private boolean existFile(String path) throws IOException {
         boolean flag = false;
         FTPFile[] ftpFileArr = ftpClient.listFiles(path);
@@ -245,9 +257,14 @@ public class FtpFileUtils implements FileUtils {
         return flag;
     }
 
-    //创建目录
+    /**
+     * 创建目录
+     *
+     * @param dir
+     * @return
+     */
     private boolean makeDirectory(String dir) {
-        boolean flag = true;
+        boolean flag = false;
         try {
             flag = ftpClient.makeDirectory(dir);
             if (flag) {
