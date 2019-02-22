@@ -36,7 +36,7 @@ public class CheckSignatureAspect {
 	
 	private static final String HEADER_AUTHORIZATION = "Authorization";
 	
-	private static final String HEADER_DATE = "Date";
+	private static final String HEADER_EXPIRE = "Expire";
 	
 	private static final String ACCESSKEYSECRET_SPLITER = ":";
 	
@@ -62,6 +62,16 @@ public class CheckSignatureAspect {
 		}
 		HttpServletRequest request = servletRequestAttributes.getRequest();
 		
+		String requestExpire = request.getHeader(HEADER_EXPIRE);
+		if(StringUtils.isEmpty(requestExpire)) {
+			throw new CheckSignatureFailureException(SignatureExceptionEnum.NO_EXPIRE_INFO);
+		}
+		long expire = Long.parseLong(requestExpire);
+		long current = System.currentTimeMillis();
+		// 如果当前时间大于过期时间，说明签名已过期
+		if(current > expire) {
+			throw new CheckSignatureFailureException(SignatureExceptionEnum.SIGNATURE_HAS_EXPIRED);
+		}
 		String requestAuthorization = request.getHeader(HEADER_AUTHORIZATION);
 		if(StringUtils.isEmpty(requestAuthorization)) {
 			throw new CheckSignatureFailureException(SignatureExceptionEnum.NO_SIGNATURE_INFO);
@@ -88,9 +98,8 @@ public class CheckSignatureAspect {
         	throw new CheckSignatureFailureException(SignatureExceptionEnum.INVALID_HTTP_METHOD);
         }
         String requestUri = request.getRequestURI();
-		String requestDate = request.getHeader(HEADER_DATE);
 		
-		String signature = HMACSHA1EncryptUtil.genHMAC(requestVerb + "\n" + requestUri + "\n" + requestDate + "\n", accessKeySecret);
+		String signature = HMACSHA1EncryptUtil.genHMAC(requestVerb + "\n" + requestUri + "\n" + requestExpire + "\n", accessKeySecret);
 		// 失败时抛出校验失败的异常
 		if(!requestSignature.equals(signature)) {
 			throw new CheckSignatureFailureException(SignatureExceptionEnum.SIGNATURE_CHECK_FAILURE);

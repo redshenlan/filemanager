@@ -12,6 +12,10 @@ public enum SignatureExceptionEnum {
 	
 	// 无法获取HTTP请求信息
 	NO_HTTP_REQUEST("no http request", "无法获取HTTP请求信息"), 
+	// 无法获取过期时间
+	NO_EXPIRE_INFO("no expire info", "无法获取过期时间"),
+	// 签名已过期
+	SIGNATURE_HAS_EXPIRED("signature has expired", "签名已过期"),
 	// 无法获取签名信息
 	NO_SIGNATURE_INFO("no signature info", "没有签名信息"), 
 	// 签名信息不完整
