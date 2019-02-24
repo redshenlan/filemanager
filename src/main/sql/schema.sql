@@ -20,7 +20,6 @@ DROP TABLE IF EXISTS bus_file;
 create table bus_file(
 	id varchar(32) not null primary key,
 	menuId bigint,
-	fileCode varchar(50),
 	fileName varchar(255),
 	fileSuffix varchar(10),
 	fileSize bigint,
@@ -28,7 +27,8 @@ create table bus_file(
 	lastModifyTime datetime,
 	lastModifyId bigint,
 	lastModifyName varchar(50),
-	valid varchar(1)
+	valid varchar(1),
+	pdfFlag varchar(1)
 );
 
 DROP TABLE IF EXISTS bus_fileOperateRecord;

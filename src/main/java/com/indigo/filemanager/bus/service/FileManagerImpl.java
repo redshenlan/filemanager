@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +25,6 @@ import com.indigo.filemanager.common.Constants;
 import com.indigo.filemanager.common.persistence.FileUtils;
 import com.indigo.filemanager.common.persistence.vo.FileInfo;
 import com.indigo.filemanager.common.persistence.vo.SaveFileResult;
-import com.indigo.filemanager.common.util.UUIDUtils;
 
 /**
  * @Description:
@@ -31,6 +32,7 @@ import com.indigo.filemanager.common.util.UUIDUtils;
  * @time: 2019年2月11日 上午11:02:00
  */
 @Service
+@Slf4j
 public class FileManagerImpl implements FileManager{
 
 	@Autowired
@@ -47,114 +49,104 @@ public class FileManagerImpl implements FileManager{
 	private FileUtils fileUtils;
 	
 	/**
+	 * 文件转换
+	 * @param fileInfo
+	 * @throws FileOperateFailureException 
+	 */
+	public void transferFile(FileInfo fileInfo) throws FileOperateFailureException{
+		ByteArrayOutputStream pdfOs = null;
+		ByteArrayInputStream pdfIs = null;
+		try {
+			//文件转换
+			pdfOs = (ByteArrayOutputStream) fileTransferService
+					.transferPdf(fileInfo.getFile(),
+							fileInfo.getFileSuffix(), "pdf");
+			pdfIs = new ByteArrayInputStream(pdfOs.toByteArray());
+			//持久化PDF文件
+			fileInfo.setFile(pdfIs);
+			fileInfo.setFileSuffix("pdf");
+			SaveFileResult result = fileUtils.saveFile(fileInfo);
+			if (!result.isResult()) {
+				throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_PERSISTENCE_FAIL);
+			}
+			//更新文件属性
+			FileRecord fileRecord = fileRecordRepository.findByIdAndValid(fileInfo.getFileKey(), "Y");
+			if(fileRecord==null){
+				throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_RECORD_NOT_FOUND);
+			}
+			fileRecord.setPdfFlag("Y");
+			fileRecordRepository.save(fileRecord);
+		} catch (FileOperateFailureException ex) {
+			throw ex;
+		} catch (IOException ex) {
+			throw new FileOperateFailureException(FileOperateFailureExceptionEnum.IO_ERROR,ex.getMessage());
+		} finally {
+			try {
+				if (pdfOs != null) {
+					pdfOs.close();
+				}
+			} catch (Exception ex) {
+				log.error("文件流关闭失败,msg:"+ex.getMessage());
+			}
+			try {
+				if (pdfIs != null) {
+					pdfIs.close();
+				}
+			} catch (Exception ex) {
+				log.error("文件流关闭失败,msg:"+ex.getMessage());
+			}
+		}
+	}
+	
+	/**
 	 * 文件上传
 	 * @param fileInfo
 	 * @param user
 	 * @throws Exception 
 	 */
 	public void uploadFile(FileInfo fileInfo,User user) throws FileOperateFailureException{
-		ByteArrayOutputStream pdfOs = null;
-		ByteArrayInputStream pdfIs = null;
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();//复制inputstream用
-		InputStream tempStream = null;//用于转换用
-		try{
-			//复制输入流
-			byte[] buffer = new byte[1024];
-			int len;
-			while ((len = fileInfo.getFile().read(buffer)) > -1) {
-				baos.write(buffer, 0, len);
-			}
-			baos.flush();
-			tempStream = new ByteArrayInputStream(baos.toByteArray());
-			fileInfo.setFile(new ByteArrayInputStream(baos.toByteArray()));
-			//保存原文件
-			SaveFileResult result = fileUtils.saveFile(fileInfo);
-			if(!result.isResult()){
-				throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_PERSISTENCE_FAIL);
-			}
-			//保存关系数据库信息
-			//校验二级目录（根目录在创建业务系统时，自动创建）
-			Menu menu = menuRepository.findByMenuNameAndBusinessSystemCodeAndParentIdNot(fileInfo.getFileSuffix(),
-					user.getBusinessSystemCode(),Constants.MENU_ROOT_ID);
-			if(menu==null){
-				//创建二级目录，目录名称为文件后缀名
-				menu = new Menu();
-				menu.setBusinessSystemCode(user.getBusinessSystemCode());
-				menu.setMenuName(fileInfo.getFileSuffix());
-				Menu firstMenu = menuRepository.findByBusinessSystemCodeAndParentId(user.getBusinessSystemCode(),
-						Constants.MENU_ROOT_ID);
-				menu.setParentId(firstMenu.getId());
-				menuRepository.save(menu);
-			}
-			//保存文件
-			FileRecord fileRecord = new FileRecord();
-			fileRecord.setFileCode(UUIDUtils.getFileCode(fileInfo.getFileSuffix()));
-			fileRecord.setFileName(fileInfo.getFileName());
-			fileRecord.setFileSize(fileInfo.getFileSize());
-			fileRecord.setFileSuffix(fileInfo.getFileSuffix());
-			fileRecord.setId(fileInfo.getFileKey());
-			fileRecord.setLastModifyId(user.getId());
-			fileRecord.setLastModifyName(user.getUserName());
-			Date now = new Date();
-			fileRecord.setCreateTime(now);
-			fileRecord.setLastModifyTime(now);
-			fileRecord.setMenuId(menu.getId());
-			fileRecord.setValid("Y");
-			fileRecordRepository.save(fileRecord);
-			//保存文件操作记录
-			FileOperateRecord fileOperateRecord = new FileOperateRecord();
-			fileOperateRecord.setFileId(fileRecord.getId());
-			fileOperateRecord.setFileName(fileRecord.getFileName());
-			fileOperateRecord.setOperaterId(user.getId());
-			fileOperateRecord.setOperaterName(user.getUserName());
-			fileOperateRecord.setOperaterTime(now);
-			fileOperateRecord.setOperaterType(Constants.OperaterType.CREATE.eval());
-			fileOperateRecordRepository.save(fileOperateRecord);
-			//转换pdf文件并保存，转换失败不影响文件上传成功
-			try{
-				if(true){//??哪些可以转换pdf
-					pdfOs = (ByteArrayOutputStream)fileTransferService.transferPdf(tempStream,
-							fileInfo.getFileSuffix(), "pdf");
-					pdfIs = new ByteArrayInputStream(pdfOs.toByteArray());
-					//保存pdf文件
-					FileInfo pdfFileInfo = new FileInfo();
-					pdfFileInfo.setFile(pdfIs);
-					pdfFileInfo.setFileKey(fileInfo.getFileKey());
-					pdfFileInfo.setFileSuffix("pdf");
-					SaveFileResult resultPdf = fileUtils.saveFile(pdfFileInfo);
-					if(!resultPdf.isResult()){
-						throw new RuntimeException("文件持久化失败");
-					}
-				}
-			}catch(Exception ex){
-				
-			}
-		}catch(FileOperateFailureException ex){
-			throw ex;
-		}catch(IOException ex){
-			throw new FileOperateFailureException(FileOperateFailureExceptionEnum.IO_ERROR,ex.getMessage());
-		}finally{
-			try{
-				//关闭流
-				if(fileInfo.getFile()!=null){
-					fileInfo.getFile().close();
-				}
-				if(pdfOs!=null){
-					pdfOs.close();
-				}
-				if(pdfIs!=null){
-					pdfIs.close();
-				}
-				if(baos!=null){
-					baos.close();
-				}
-				if(tempStream!=null){
-					tempStream.close();
-				}
-			}catch(IOException ex){
-				throw new FileOperateFailureException(FileOperateFailureExceptionEnum.IO_ERROR,ex.getMessage());
-			}
+		//保存原文件
+		SaveFileResult result = fileUtils.saveFile(fileInfo);
+		if(!result.isResult()){
+			throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_PERSISTENCE_FAIL);
 		}
+		//保存关系数据库信息
+		//校验二级目录（根目录在创建业务系统时，自动创建）
+		Menu menu = menuRepository.findByMenuNameAndBusinessSystemCodeAndParentIdNot(fileInfo.getFileSuffix(),
+				user.getBusinessSystemCode(),Constants.MENU_ROOT_ID);
+		if(menu==null){
+			//创建二级目录，目录名称为文件后缀名
+			menu = new Menu();
+			menu.setBusinessSystemCode(user.getBusinessSystemCode());
+			menu.setMenuName(fileInfo.getFileSuffix());
+			Menu firstMenu = menuRepository.findByBusinessSystemCodeAndParentId(user.getBusinessSystemCode(),
+					Constants.MENU_ROOT_ID);
+			menu.setParentId(firstMenu.getId());
+			menuRepository.save(menu);
+		}
+		//保存文件
+		FileRecord fileRecord = new FileRecord();
+		fileRecord.setFileName(fileInfo.getFileName());
+		fileRecord.setFileSize(fileInfo.getFileSize());
+		fileRecord.setFileSuffix(fileInfo.getFileSuffix());
+		fileRecord.setId(fileInfo.getFileKey());
+		fileRecord.setLastModifyId(user.getId());
+		fileRecord.setLastModifyName(user.getUserName());
+		Date now = new Date();
+		fileRecord.setCreateTime(now);
+		fileRecord.setLastModifyTime(now);
+		fileRecord.setMenuId(menu.getId());
+		fileRecord.setValid("Y");
+		fileRecordRepository.save(fileRecord);
+		//保存文件操作记录
+		FileOperateRecord fileOperateRecord = new FileOperateRecord();
+		fileOperateRecord.setFileId(fileRecord.getId());
+		fileOperateRecord.setFileName(fileRecord.getFileName());
+		fileOperateRecord.setOperaterId(user.getId());
+		fileOperateRecord.setOperaterName(user.getUserName());
+		fileOperateRecord.setOperaterTime(now);
+		fileOperateRecord.setOperaterType(Constants.OperaterType.CREATE.eval());
+		fileOperateRecordRepository.save(fileOperateRecord);
 	}
 	
 	/**

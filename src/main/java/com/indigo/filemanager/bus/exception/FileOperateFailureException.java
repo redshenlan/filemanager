@@ -33,6 +33,10 @@ public class FileOperateFailureException extends RuntimeException {
                 this.code = "404";
                 this.msg = "文件不支持pdf转换";
                 break;
+            case FILE_RECORD_NOT_FOUND:
+            	this.code = "405";
+            	this.msg = "文件数据库记录未找到";
+            	break;
             default:
                 this.code = "499";
                 this.msg = "文件操作失败";

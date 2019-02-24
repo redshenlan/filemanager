@@ -12,6 +12,13 @@ import com.indigo.filemanager.common.persistence.vo.FileInfo;
  * @time: 2019年2月11日 上午11:01:50
  */
 public interface FileManager {
+	
+	/**
+	 * 文件转换(调用方判断是否可转换）
+	 * @param fileInfo
+	 * @throws FileOperateFailureException 
+	 */
+	public void transferFile(FileInfo fileInfo) throws FileOperateFailureException;
 
 	/**
 	 * 文件上传

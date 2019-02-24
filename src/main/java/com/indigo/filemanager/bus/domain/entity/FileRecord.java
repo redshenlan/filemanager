@@ -26,9 +26,6 @@ public class FileRecord {
 	@Column
 	private Long menuId;//目录ID
 	
-	@Column(length=50)
-	private String fileCode;//文件编码
-	
 	@Column(length=255)
 	private String fileName;//文件名称
 	
@@ -51,5 +48,8 @@ public class FileRecord {
 	private String lastModifyName;//最后修改人名称
 	
 	@Column(length=1)
-	private String valid;//有效标志（Y：正常，N，已删除）
+	private String valid;//有效标志（Y：正常，N：已删除）
+	
+	@Column(length=1)
+	private String pdfFlag;//是否有对应的pdf文件（Y：有，N：无）
 }

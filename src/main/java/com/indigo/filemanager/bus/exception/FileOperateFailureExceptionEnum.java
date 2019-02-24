@@ -16,6 +16,8 @@ public enum FileOperateFailureExceptionEnum {
 	FILE_TRANSFER_FAIL,
 	//可转换pdf的文件类型配置为空
 	FILE_TRANSFER_NOCONFIG,
+	//未找到文件数据库记录
+	FILE_RECORD_NOT_FOUND,
 	//IO出错
 	IO_ERROR;
 }
