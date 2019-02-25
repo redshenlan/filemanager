@@ -23,40 +23,19 @@ public class JacobOffice2PdfUtil {
     private Logger logger = Logger.getLogger(JacobOffice2PdfUtil.class);
 
 
-    public static int convert2PDF(String inputFile, String pdfFile) {
-        String kind = getFileSufix(inputFile);
-        File file = new File(inputFile);
-        if (!file.exists()) {
-            System.out.println("文件不存在");
-            return -2;
-        }
-        if (kind.equals("pdf")) {
-            System.out.println("原文件就是PDF文件");
-            return -3;
-        }
-        if (kind.equals("doc") || kind.equals("docx") || kind.equals("txt")) {
-            return word2PDF(inputFile, pdfFile);
-        } else if (kind.equals("ppt") || kind.equals("pptx")) {
-            return ppt2PDF(inputFile, pdfFile);
-        } else if (kind.equals("xls") || kind.equals("xlsx")) {
-            return Ex2PDF(inputFile, pdfFile);
-        } else {
-            return -4;
-        }
-    }
+
 
     public static String getFileSufix(String fileName) {
         int splitIndex = fileName.lastIndexOf(".");
         return fileName.substring(splitIndex + 1);
     }
 
-    public static int word2PDF(String inputFile, String pdfFile) {
+    public static void word2PDF(String inputFile, String pdfFile) {
         try {
             ComThread.InitSTA(true);
             // 打开Word应用程序
             ActiveXComponent app = new ActiveXComponent("KWPS.Application");
             System.out.println("开始转化Word为PDF...");
-            long date = new Date().getTime();
             // 设置Word不可见
             app.setProperty("Visible", new Variant(false));
             // 禁用宏
@@ -76,26 +55,21 @@ public class JacobOffice2PdfUtil {
             Dispatch.put(doc, "ShowRevisions", false);
             Dispatch.call(doc, "ExportAsFixedFormat", pdfFile, wdFormatPDF);// word保存为pdf格式宏，值为17
             // 关闭文档
-            long date2 = new Date().getTime();
-            int time = (int) ((date2 - date) / 1000);
-
-            Dispatch.call(doc, "Close", false);
+            Variant var=Dispatch.call(doc, "Close", false);
             // 关闭Word应用程序
             app.invoke("Quit", 0);
             ComThread.Release();
-            return time;
         } catch (Exception e) {
             throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_TRANSFER_FAIL);
         }
     }
 
 
-    public static int Ex2PDF(String inputFile, String pdfFile) {
+    public static void Ex2PDF(String inputFile, String pdfFile) {
         try {
             ComThread.InitSTA(true);
             ActiveXComponent ax = new ActiveXComponent("KET.Application");
             System.out.println("开始转化Excel为PDF...");
-            long date = new Date().getTime();
             ax.setProperty("Visible", false);
             ax.setProperty("AutomationSecurity", new Variant(3)); // 禁用宏
             Dispatch excels = ax.getProperty("Workbooks").toDispatch();
@@ -110,8 +84,6 @@ public class JacobOffice2PdfUtil {
                     // (生成的PDF图片糊的一塌糊涂)
             }, new int[1]);
 
-            long date2 = new Date().getTime();
-            int time = (int) ((date2 - date) / 1000);
             Dispatch.call(excel, "Close", new Variant(false));
 
             if (ax != null) {
@@ -119,20 +91,18 @@ public class JacobOffice2PdfUtil {
                 ax = null;
             }
             ComThread.Release();
-            return time;
         } catch (Exception e) {
             throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_TRANSFER_FAIL);
         }
     }
 
 
-    public static int ppt2PDF(String inputFile, String pdfFile) {
+    public static void ppt2PDF(String inputFile, String pdfFile) {
         System.out.println("开始转化PPT为PDF...");
         try {
             ComThread.InitSTA(true);
             ActiveXComponent app = new ActiveXComponent("KWPP.Application");
 //            app.setProperty("Visible", false);
-            long date = new Date().getTime();
             Dispatch ppts = app.getProperty("Presentations").toDispatch();
             Dispatch ppt = Dispatch.call(ppts, "Open", inputFile, true, // ReadOnly
                     // false, // Untitled指定文件是否有标题
@@ -142,11 +112,8 @@ public class JacobOffice2PdfUtil {
                     new int[1]);
             System.out.println("PPT");
             Dispatch.call(ppt, "Close");
-            long date2 = new Date().getTime();
-            int time = (int) ((date2 - date) / 1000);
             app.invoke("Quit");
             ComThread.Release();
-            return time;
         } catch (Exception e) {
             throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_TRANSFER_FAIL);
         }

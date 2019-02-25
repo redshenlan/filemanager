@@ -52,10 +52,5 @@ public class FilemanagerApplicationTests {
 		fileManager.deleteFile("13239619412a4221ba54a4d9839f03bf", "010101");
 	}
 
-    @Test
-    public void wpsTransferTest() {
-        JacobOffice2PdfUtil.convert2PDF("D:\\1234.pptx","D:\\1234ttp.pdf");
-    }
-
 }
 
