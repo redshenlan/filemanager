@@ -62,6 +62,7 @@ public class JacobOffice2PdfUtil {
         } catch (Exception e) {
             throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_TRANSFER_FAIL);
         }
+        System.out.println("转化Word为PDF成功...");
     }
 
 
@@ -94,6 +95,7 @@ public class JacobOffice2PdfUtil {
         } catch (Exception e) {
             throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_TRANSFER_FAIL);
         }
+        System.out.println("转化Excel为PDF成功...");
     }
 
 
@@ -117,6 +119,7 @@ public class JacobOffice2PdfUtil {
         } catch (Exception e) {
             throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_TRANSFER_FAIL);
         }
+        System.out.println("转化PPT为PDF成功...");
     }
 
     // 删除多余的页，并转换为PDf
