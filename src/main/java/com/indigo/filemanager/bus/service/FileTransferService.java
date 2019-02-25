@@ -46,22 +46,20 @@ public class FileTransferService {
         String filePath = saveas_tempdir + "/" + fileName;
         writtoLocal(filePath + "." + filetype, inputStream);
         //转换
-        int back = 0;
         if (!StringUtils.isEmpty(transfer_file)) {
             String[] types = transfer_file.split("\\|");
             if (!StringUtils.isEmpty(types[0]) && (","+types[0]+",").contains("," + filetype + ",")) {
-                back = JacobOffice2PdfUtil.word2PDF(filePath + "." + filetype, filePath + "." + outFileType);
+                 JacobOffice2PdfUtil.word2PDF(filePath + "." + filetype, filePath + "." + outFileType);
             }
             if (!StringUtils.isEmpty(types[1]) && (","+types[1]+",").contains("," + filetype + ",")) {
-                back = JacobOffice2PdfUtil.Ex2PDF(filePath + "." + filetype, filePath + "." + outFileType);
+                 JacobOffice2PdfUtil.Ex2PDF(filePath + "." + filetype, filePath + "." + outFileType);
             }
             if (!StringUtils.isEmpty(types[2]) && (","+types[2]+",").contains("," + filetype + ",")) {
-                back = JacobOffice2PdfUtil.ppt2PDF(filePath + "." + filetype, filePath + "." + outFileType);
+                 JacobOffice2PdfUtil.ppt2PDF(filePath + "." + filetype, filePath + "." + outFileType);
             }
         }else{
             throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_TRANSFER_NOCONFIG);
         }
-        if (back > 0) {
             FileInputStream fileInputStream = new FileInputStream(filePath + "." + outFileType);
             BufferedInputStream bis = new BufferedInputStream(fileInputStream);
             outputStream = new ByteArrayOutputStream();
@@ -69,9 +67,7 @@ public class FileTransferService {
             while ((bis.read(buffer)) != -1) {
                 outputStream.write(buffer);
             }
-        }else{
-            throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_TRANSFER_FAIL);
-        }
+
         return outputStream;
     }
 
