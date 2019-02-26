@@ -25,7 +25,9 @@ public enum FileOperateFailureExceptionEnum {
 	// 未找到文件数据库记录
 	FILE_RECORD_NOT_FOUND("407", "未找到文件数据库记录"),
 	// 未找到文件持久化信息
-	FILE_PERSISTENCE_NOT_FOUND("408", "未找到文件持久化信息");
+	FILE_PERSISTENCE_NOT_FOUND("408", "未找到文件持久化信息"),
+	// 文件不能查看（没有对应PDF文件）
+	FILE_CAN_NOT_VIEW("409", "文件无法查看");
 
 	private String code;
 	private String msg;

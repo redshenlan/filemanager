@@ -43,7 +43,7 @@ public class FilemanagerApplicationTests {
 	@Test
 	public void fileManagerTest() throws IOException {
 		User user = userRepository.findByAccessKeyIdAndValid("010101","Y");
-		InputStream is = fileManager.getFileFdf("1c5e692206ef415a89a44f08b0ea39a1", user);
+		InputStream is = fileManager.getFileFdf("702ae225ce5f46638b7dc5351c3c53e8", user);
 		System.out.println(is.available());
 	}
 	

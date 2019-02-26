@@ -115,7 +115,7 @@ public class FtpFileUtils implements FileUtils {
             //切换FTP目录
             ftpClient.changeWorkingDirectory(fileInfo.getFilepath());
             os = new ByteArrayOutputStream();
-            if(ftpClient.retrieveFile(fileName, os))
+            if(!ftpClient.retrieveFile(fileName, os))
             {
                 return SaveFileResult.fail(fileInfo.getFileKey()).message("获取文件失败！");
             }

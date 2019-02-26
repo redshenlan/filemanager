@@ -246,10 +246,13 @@ public class FileManagerImpl implements FileManager{
 		if(fileRecord==null){
 			throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_RECORD_NOT_FOUND);
 		}
+		if(!"Y".equals(fileRecord.getPdfFlag())){
+			throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_CAN_NOT_VIEW);
+		}
 		//读取文件物理存储
 		fileInfo = new FileInfo();
 		fileInfo.setFileKey(filekey);
-		fileInfo.setFileSuffix(fileRecord.getFileSuffix());
+		fileInfo.setFileSuffix("pdf");
 		SaveFileResult result = fileUtils.getFile(fileInfo);
 		ByteArrayOutputStream outputStream = null;
 		ByteArrayInputStream inputStream = null;
