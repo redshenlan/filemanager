@@ -16,7 +16,11 @@
 
 package com.indigo.filemanager.controller;
 
+import com.indigo.filemanager.bus.domain.entity.User;
+import com.indigo.filemanager.bus.service.FileManager;
 import com.indigo.filemanager.bus.service.FileTransferService;
+import com.indigo.filemanager.common.security.sign.annotation.CurrentUser;
+import com.indigo.filemanager.common.security.sign.annotation.NeedCheckSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,6 +36,8 @@ import java.io.OutputStream;
 public class OutController {
     @Autowired
     private FileTransferService fileTransferService;
+	@Autowired
+	private FileManager fileManager;
 
 	/**
 	 * 在线查看
@@ -41,8 +47,9 @@ public class OutController {
 	 * @throws IOException
 	 */
 	@RequestMapping("/files/view/{filekey}")
-	public String viewfile(@PathVariable("filekey") String filekey, HttpServletResponse response) throws IOException {
-		InputStream is = new FileInputStream("d:\\1234ttp.pdf");
+	@NeedCheckSignature
+	public String viewfile(@CurrentUser User user, @PathVariable("filekey") String filekey, HttpServletResponse response) throws IOException {
+		InputStream is =fileManager.getFileFdf(filekey,user);
 		OutputStream ops=response.getOutputStream();
 		response.setContentType("application/pdf");
 		 ops.flush();
