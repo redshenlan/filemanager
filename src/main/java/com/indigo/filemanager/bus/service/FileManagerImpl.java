@@ -22,6 +22,7 @@ import com.indigo.filemanager.bus.domain.entity.User;
 import com.indigo.filemanager.bus.exception.FileOperateFailureException;
 import com.indigo.filemanager.bus.exception.FileOperateFailureExceptionEnum;
 import com.indigo.filemanager.common.Constants;
+import com.indigo.filemanager.common.OperaterTypeEnum;
 import com.indigo.filemanager.common.persistence.FileUtils;
 import com.indigo.filemanager.common.persistence.vo.FileInfo;
 import com.indigo.filemanager.common.persistence.vo.SaveFileResult;
@@ -140,14 +141,7 @@ public class FileManagerImpl implements FileManager{
 		fileRecord.setPdfFlag("N");
 		fileRecordRepository.save(fileRecord);
 		//保存文件操作记录
-		FileOperateRecord fileOperateRecord = new FileOperateRecord();
-		fileOperateRecord.setFileId(fileRecord.getId());
-		fileOperateRecord.setFileName(fileRecord.getFileName());
-		fileOperateRecord.setOperaterId(user.getId());
-		fileOperateRecord.setOperaterName(user.getUserName());
-		fileOperateRecord.setOperaterTime(now);
-		fileOperateRecord.setOperaterType(Constants.OperaterType.CREATE.eval());
-		fileOperateRecordRepository.save(fileOperateRecord);
+		this.saveFileOperateRecord(fileRecord, user, OperaterTypeEnum.CREATE);
 	}
 	
 	/**
@@ -174,14 +168,7 @@ public class FileManagerImpl implements FileManager{
 			throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_PERSISTENCE_NOT_FOUND);
 		}
 		//保存文件下载记录
-		FileOperateRecord fileOperateRecord = new FileOperateRecord();
-		fileOperateRecord.setFileId(fileRecord.getId());
-		fileOperateRecord.setFileName(fileRecord.getFileName());
-		fileOperateRecord.setOperaterId(user.getId());
-		fileOperateRecord.setOperaterName(user.getUserName());
-		fileOperateRecord.setOperaterTime(new Date());
-		fileOperateRecord.setOperaterType(Constants.OperaterType.DOWNLOAD.eval());
-		fileOperateRecordRepository.save(fileOperateRecord);
+		this.saveFileOperateRecord(fileRecord, user, OperaterTypeEnum.DOWNLOAD);
 		return fileInfo;
 	}
 	
@@ -220,14 +207,7 @@ public class FileManagerImpl implements FileManager{
 		fileRecord.setValid("N");
 		fileRecordRepository.save(fileRecord);
 		//保存文件删除记录
-		FileOperateRecord fileOperateRecord = new FileOperateRecord();
-		fileOperateRecord.setFileId(fileRecord.getId());
-		fileOperateRecord.setFileName(fileRecord.getFileName());
-		fileOperateRecord.setOperaterId(user.getId());
-		fileOperateRecord.setOperaterName(user.getUserName());
-		fileOperateRecord.setOperaterTime(now);
-		fileOperateRecord.setOperaterType(Constants.OperaterType.DELETE.eval());
-		fileOperateRecordRepository.save(fileOperateRecord);
+		this.saveFileOperateRecord(fileRecord, user, OperaterTypeEnum.DELETE);
 	}
 	
 	/**
@@ -250,14 +230,7 @@ public class FileManagerImpl implements FileManager{
 		fileRecord.setLastModifyTime(now);
 		fileRecordRepository.save(fileRecord);
 		// 保存文件操作记录
-		FileOperateRecord fileOperateRecord = new FileOperateRecord();
-		fileOperateRecord.setFileId(fileRecord.getId());
-		fileOperateRecord.setFileName(fileRecord.getFileName());
-		fileOperateRecord.setOperaterId(user.getId());
-		fileOperateRecord.setOperaterName(user.getUserName());
-		fileOperateRecord.setOperaterTime(now);
-		fileOperateRecord.setOperaterType(Constants.OperaterType.UPDATE.eval());
-		fileOperateRecordRepository.save(fileOperateRecord);
+		this.saveFileOperateRecord(fileRecord, user, OperaterTypeEnum.UPDATE);
 	}
 	
 	/**
@@ -287,14 +260,7 @@ public class FileManagerImpl implements FileManager{
 			throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_PERSISTENCE_NOT_FOUND);
 		}
 		//保存文件查看记录
-		FileOperateRecord fileOperateRecord = new FileOperateRecord();
-		fileOperateRecord.setFileId(fileRecord.getId());
-		fileOperateRecord.setFileName(fileRecord.getFileName());
-		fileOperateRecord.setOperaterId(user.getId());
-		fileOperateRecord.setOperaterName(user.getUserName());
-		fileOperateRecord.setOperaterTime(new Date());
-		fileOperateRecord.setOperaterType(Constants.OperaterType.READ.eval());
-		fileOperateRecordRepository.save(fileOperateRecord);
+		this.saveFileOperateRecord(fileRecord, user, OperaterTypeEnum.READ);
 		if(outputStream!=null){
 			try {
 				outputStream.close();
@@ -303,5 +269,22 @@ public class FileManagerImpl implements FileManager{
 			}
 		}
 		return inputStream;
+	}
+	
+	/**
+	 * 保存文件操作记录
+	 * @param fileRecord
+	 * @param user
+	 * @param operaterType
+	 */
+	private void saveFileOperateRecord(FileRecord fileRecord,User user,OperaterTypeEnum operaterType){
+		FileOperateRecord fileOperateRecord = new FileOperateRecord();
+		fileOperateRecord.setFileId(fileRecord.getId());
+		fileOperateRecord.setFileName(fileRecord.getFileName());
+		fileOperateRecord.setOperaterId(user.getId());
+		fileOperateRecord.setOperaterName(user.getUserName());
+		fileOperateRecord.setOperaterTime(new Date());
+		fileOperateRecord.setOperaterType(operaterType.getCode());
+		fileOperateRecordRepository.save(fileOperateRecord);
 	}
 }
