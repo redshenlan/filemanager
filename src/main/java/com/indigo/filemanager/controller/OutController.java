@@ -18,6 +18,7 @@ package com.indigo.filemanager.controller;
 
 import com.indigo.filemanager.bus.service.FileTransferService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,9 +41,9 @@ public class OutController {
 	 * @return
 	 * @throws IOException
 	 */
-	@RequestMapping("/files/view/{filekey}")
+	@GetMapping("/files/view/{filekey}")
 	public String viewfile(@PathVariable("filekey") String filekey, HttpServletResponse response) throws IOException {
-		InputStream is = new FileInputStream("/opt/openoffice4/123.pdf");
+		InputStream is = new FileInputStream("d:\\1234ttp.pdf");
 		OutputStream ops=response.getOutputStream();
 		response.setContentType("application/pdf");
 		 ops.flush();
