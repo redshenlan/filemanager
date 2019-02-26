@@ -62,7 +62,8 @@ public class CheckSignatureAspect {
 		}
 		HttpServletRequest request = servletRequestAttributes.getRequest();
 		
-		String requestExpire = request.getHeader(HEADER_EXPIRE);
+		// 如果Request Header中没有参数，则尝试获取Request Body中的参数
+		String requestExpire = StringUtils.isEmpty(request.getHeader(HEADER_EXPIRE)) ? request.getParameter(HEADER_EXPIRE) : request.getHeader(HEADER_EXPIRE);
 		if(StringUtils.isEmpty(requestExpire)) {
 			throw new CheckSignatureFailureException(SignatureExceptionEnum.NO_EXPIRE_INFO);
 		}
@@ -72,7 +73,7 @@ public class CheckSignatureAspect {
 		if(current > expire) {
 			throw new CheckSignatureFailureException(SignatureExceptionEnum.SIGNATURE_HAS_EXPIRED);
 		}
-		String requestAuthorization = request.getHeader(HEADER_AUTHORIZATION);
+		String requestAuthorization = StringUtils.isEmpty(request.getHeader(HEADER_AUTHORIZATION)) ? request.getParameter(HEADER_AUTHORIZATION) : request.getHeader(HEADER_AUTHORIZATION);
 		if(StringUtils.isEmpty(requestAuthorization)) {
 			throw new CheckSignatureFailureException(SignatureExceptionEnum.NO_SIGNATURE_INFO);
 		}
