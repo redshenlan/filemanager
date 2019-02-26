@@ -14,7 +14,7 @@ import com.indigo.filemanager.common.persistence.vo.FileInfo;
 public interface FileManager {
 	
 	/**
-	 * 文件转换(调用方判断是否可转换）
+	 * 文件转换
 	 * @param fileInfo
 	 * @throws FileOperateFailureException 
 	 */
@@ -29,32 +29,33 @@ public interface FileManager {
 	/**
 	 * 文件下载
 	 * @param filekey
-	 * @param userCode
-	 * @return
+	 * @param user
+	 * @return FileOperateFailureException
 	 */
-	public FileInfo downloadFile(String filekey,String userCode) throws Exception;
+	public FileInfo downloadFile(String filekey,User user) throws FileOperateFailureException;
 	
 	/**
 	 * 文件删除
 	 * @param filekey
-	 * @param userCode
-	 * @throws Exception
+	 * @param user
+	 * @throws FileOperateFailureException
 	 */
-	public void deleteFile(String filekey,String userCode) throws Exception;
+	public void deleteFile(String filekey,User user) throws FileOperateFailureException;
 	
 	/**
-	 * 文件更新
-	 * @param fileInfo
-	 * @param userCode
-	 * @throws Exception
+	 * 更新文件(仅更新文件名称)
+	 * @param filekey
+	 * @param filename
+	 * @param user
 	 */
-	public void updateFile(FileInfo fileInfo,String userCode) throws Exception;
+	public void updateFile(String filekey,String filename,User user) throws FileOperateFailureException;
 	
 	/**
 	 * 根据filekey获取pdf文件的输入流
 	 * @param filekey
+	 * @param user
 	 * @return
-	 * @throws Exception
+	 * @throws FileOperateFailureException
 	 */
-	public InputStream getFileFdf(String filekey) throws Exception;
+	public InputStream getFileFdf(String filekey,User user) throws FileOperateFailureException;
 }

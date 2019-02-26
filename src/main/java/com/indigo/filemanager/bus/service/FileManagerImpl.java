@@ -81,19 +81,19 @@ public class FileManagerImpl implements FileManager{
 		} catch (IOException ex) {
 			throw new FileOperateFailureException(FileOperateFailureExceptionEnum.IO_ERROR,ex.getMessage());
 		} finally {
-			try {
-				if (pdfOs != null) {
+			if (pdfOs != null) {
+				try {
 					pdfOs.close();
+				} catch (IOException e) {
+					log.error("文件流关闭失败,msg:"+e.getMessage());
 				}
-			} catch (Exception ex) {
-				log.error("文件流关闭失败,msg:"+ex.getMessage());
 			}
-			try {
-				if (pdfIs != null) {
+			if (pdfIs != null) {
+				try {
 					pdfIs.close();
+				} catch (IOException e) {
+					log.error("文件流关闭失败,msg:"+e.getMessage());
 				}
-			} catch (Exception ex) {
-				log.error("文件流关闭失败,msg:"+ex.getMessage());
 			}
 		}
 	}
@@ -102,7 +102,7 @@ public class FileManagerImpl implements FileManager{
 	 * 文件上传
 	 * @param fileInfo
 	 * @param user
-	 * @throws Exception 
+	 * @throws FileOperateFailureException 
 	 */
 	public void uploadFile(FileInfo fileInfo,User user) throws FileOperateFailureException{
 		//保存原文件
@@ -137,6 +137,7 @@ public class FileManagerImpl implements FileManager{
 		fileRecord.setLastModifyTime(now);
 		fileRecord.setMenuId(menu.getId());
 		fileRecord.setValid("Y");
+		fileRecord.setPdfFlag("N");
 		fileRecordRepository.save(fileRecord);
 		//保存文件操作记录
 		FileOperateRecord fileOperateRecord = new FileOperateRecord();
@@ -152,19 +153,14 @@ public class FileManagerImpl implements FileManager{
 	/**
 	 * 文件下载
 	 * @param filekey
-	 * @param userCode
-	 * @return
+	 * @param user
+	 * @return FileOperateFailureException
 	 */
-	public FileInfo downloadFile(String filekey,String userCode) throws Exception{
-		//校验用户？？
-		User user = userRepository.findByAccessKeyIdAndValid(userCode,"Y");
-		if(user==null){
-			throw new RuntimeException("无效用户");
-		}
+	public FileInfo downloadFile(String filekey,User user) throws FileOperateFailureException{
 		FileInfo fileInfo = null;
 		FileRecord fileRecord = fileRecordRepository.findByIdAndValid(filekey, "Y");
 		if(fileRecord==null){
-			throw new RuntimeException("未查询到该文件信息");
+			throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_RECORD_NOT_FOUND);
 		}
 		//读取文件物理存储
 		fileInfo = new FileInfo();
@@ -175,7 +171,7 @@ public class FileManagerImpl implements FileManager{
 			fileInfo.setDownFile(result.getDownFile());
 			fileInfo.setFileName(fileRecord.getFileName());
 		}else{
-			throw new RuntimeException("文件物理存储已丢失");
+			throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_PERSISTENCE_NOT_FOUND);
 		}
 		//保存文件下载记录
 		FileOperateRecord fileOperateRecord = new FileOperateRecord();
@@ -192,18 +188,13 @@ public class FileManagerImpl implements FileManager{
 	/**
 	 * 文件删除(删除文件物理存储，关系数据库有效标志置为无效)
 	 * @param filekey
-	 * @param userCode
-	 * @throws Exception
+	 * @param user
+	 * @throws FileOperateFailureException
 	 */
-	public void deleteFile(String filekey,String userCode) throws Exception{
-		//校验用户？？
-		User user = userRepository.findByAccessKeyIdAndValid(userCode,"Y");
-		if(user==null){
-			throw new RuntimeException("无效用户");
-		}
+	public void deleteFile(String filekey,User user) throws FileOperateFailureException{
 		FileRecord fileRecord = fileRecordRepository.findByIdAndValid(filekey, "Y");
 		if(fileRecord==null){
-			throw new RuntimeException("未查询到该文件信息");
+			throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_RECORD_NOT_FOUND);
 		}
 		//删除文件物理存储
 		FileInfo fileInfo = new FileInfo();
@@ -211,14 +202,14 @@ public class FileManagerImpl implements FileManager{
 		fileInfo.setFileSuffix(fileRecord.getFileSuffix());
 		SaveFileResult result = fileUtils.delteFile(fileInfo);
 		if(!result.isResult()){
-			throw new RuntimeException("文件物理存储已丢失");
+			throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_PERSISTENCE_NOT_FOUND);
 		}
 		//删除文件PDF物理存储
-		if(true){//??哪些可以转换pdf
+		if("Y".equals(fileRecord.getPdfFlag())){
 			fileInfo.setFileSuffix("pdf");
 			SaveFileResult resultPdf = fileUtils.delteFile(fileInfo);
 			if(!resultPdf.isResult()){
-				throw new RuntimeException("文件物理存储已丢失");
+				throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_PERSISTENCE_NOT_FOUND);
 			}
 		}
 		//更新文件
@@ -240,104 +231,77 @@ public class FileManagerImpl implements FileManager{
 	}
 	
 	/**
-	 * 文件更新 (？？可更新的属性包含什么？？目前仅可更新文件名——不包含后缀，以及文件内容，文件大小)
-	 * @param fileInfo
-	 * @param userCode
-	 * @throws Exception
+	 * 更新文件(仅更新文件名称)
+	 * @param filekey
+	 * @param filename
+	 * @param user
 	 */
-	public void updateFile(FileInfo fileInfo,String userCode) throws Exception{
-		//校验用户？？
-		User user = userRepository.findByAccessKeyIdAndValid(userCode,"Y");
-		if(user==null){
-			throw new RuntimeException("无效用户");
+	public void updateFile(String filekey, String filename, User user)  throws FileOperateFailureException {
+		// 查询文件记录
+		FileRecord fileRecord = fileRecordRepository.findByIdAndValid(filekey, "Y");
+		if (fileRecord == null) {
+			throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_RECORD_NOT_FOUND);
 		}
-		//查询文件记录
-		FileRecord fileRecord = fileRecordRepository.findByIdAndValid(fileInfo.getFileKey(), "Y");
-		if(fileRecord==null){
-			throw new RuntimeException("未查询到该文件信息");
-		}
-		ByteArrayOutputStream pdfOs = null;
-		ByteArrayInputStream pdfIs = null;
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();//复制inputstream用
-		InputStream tempStream = null;//用于转换用
-		try{
-			//复制输入流
-			byte[] buffer = new byte[1024];
-			int len;
-			while ((len = fileInfo.getFile().read(buffer)) > -1) {
-				baos.write(buffer, 0, len);
-			}
-			baos.flush();
-			tempStream = new ByteArrayInputStream(baos.toByteArray());
-			fileInfo.setFile(new ByteArrayInputStream(baos.toByteArray()));
-			//转换pdf文件并保存
-			if(true){//??哪些可以转换pdf
-				pdfOs = (ByteArrayOutputStream)fileTransferService.transferPdf(tempStream,
-						fileInfo.getFileSuffix(), "pdf");
-				pdfIs = new ByteArrayInputStream(pdfOs.toByteArray());
-				//更新pdf文件
-				FileInfo pdfFileInfo = new FileInfo();
-				pdfFileInfo.setFile(pdfIs);
-				pdfFileInfo.setFileKey(fileInfo.getFileKey());
-				pdfFileInfo.setFileSuffix("pdf");
-				SaveFileResult resultPdf = fileUtils.updateFile(pdfFileInfo);
-				if(!resultPdf.isResult()){
-					throw new RuntimeException("文件持久化失败");
-				}
-			}
-			//更新原文件
-			SaveFileResult result = fileUtils.updateFile(fileInfo);
-			if(!result.isResult()){
-				throw new RuntimeException("文件持久化失败");
-			}
-			//保存关系数据库信息
-			//更新文件
-			Date now = new Date();
-			fileRecord.setFileName(fileInfo.getFileName());
-			fileRecord.setFileSize(fileInfo.getFileSize());
-			fileRecord.setLastModifyId(user.getId());
-			fileRecord.setLastModifyName(user.getUserName());
-			fileRecord.setLastModifyTime(now);
-			fileRecordRepository.save(fileRecord);
-			//保存文件操作记录
-			FileOperateRecord fileOperateRecord = new FileOperateRecord();
-			fileOperateRecord.setFileId(fileRecord.getId());
-			fileOperateRecord.setFileName(fileRecord.getFileName());
-			fileOperateRecord.setOperaterId(user.getId());
-			fileOperateRecord.setOperaterName(user.getUserName());
-			fileOperateRecord.setOperaterTime(now);
-			fileOperateRecord.setOperaterType(Constants.OperaterType.UPDATE.eval());
-			fileOperateRecordRepository.save(fileOperateRecord);
-		}catch(Exception ex){
-			throw ex;
-		}finally{
-			//关闭流
-			if(fileInfo.getFile()!=null){
-				fileInfo.getFile().close();
-			}
-			if(pdfOs!=null){
-				pdfOs.close();
-			}
-			if(pdfIs!=null){
-				pdfIs.close();
-			}
-			if(baos!=null){
-				baos.close();
-			}
-			if(tempStream!=null){
-				tempStream.close();
-			}
-		}
+		// 更新文件
+		Date now = new Date();
+		fileRecord.setFileName(filename);
+		fileRecord.setLastModifyId(user.getId());
+		fileRecord.setLastModifyName(user.getUserName());
+		fileRecord.setLastModifyTime(now);
+		fileRecordRepository.save(fileRecord);
+		// 保存文件操作记录
+		FileOperateRecord fileOperateRecord = new FileOperateRecord();
+		fileOperateRecord.setFileId(fileRecord.getId());
+		fileOperateRecord.setFileName(fileRecord.getFileName());
+		fileOperateRecord.setOperaterId(user.getId());
+		fileOperateRecord.setOperaterName(user.getUserName());
+		fileOperateRecord.setOperaterTime(now);
+		fileOperateRecord.setOperaterType(Constants.OperaterType.UPDATE.eval());
+		fileOperateRecordRepository.save(fileOperateRecord);
 	}
 	
 	/**
 	 * 根据filekey获取pdf文件的输入流
 	 * @param filekey
+	 * @param user
 	 * @return
-	 * @throws Exception
+	 * @throws FileOperateFailureException
 	 */
-	public InputStream getFileFdf(String filekey) throws Exception{
-		
-		return null;
+	public InputStream getFileFdf(String filekey,User user) throws FileOperateFailureException{
+		FileInfo fileInfo = null;
+		FileRecord fileRecord = fileRecordRepository.findByIdAndValid(filekey, "Y");
+		if(fileRecord==null){
+			throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_RECORD_NOT_FOUND);
+		}
+		//读取文件物理存储
+		fileInfo = new FileInfo();
+		fileInfo.setFileKey(filekey);
+		fileInfo.setFileSuffix(fileRecord.getFileSuffix());
+		SaveFileResult result = fileUtils.getFile(fileInfo);
+		ByteArrayOutputStream outputStream = null;
+		ByteArrayInputStream inputStream = null;
+		if(result.isResult()){
+			outputStream = (ByteArrayOutputStream) result.getDownFile();
+			inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+		}else{
+			throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_PERSISTENCE_NOT_FOUND);
+		}
+		//保存文件查看记录
+		FileOperateRecord fileOperateRecord = new FileOperateRecord();
+		fileOperateRecord.setFileId(fileRecord.getId());
+		fileOperateRecord.setFileName(fileRecord.getFileName());
+		fileOperateRecord.setOperaterId(user.getId());
+		fileOperateRecord.setOperaterName(user.getUserName());
+		fileOperateRecord.setOperaterTime(new Date());
+		fileOperateRecord.setOperaterType(Constants.OperaterType.READ.eval());
+		fileOperateRecordRepository.save(fileOperateRecord);
+		if(outputStream!=null){
+			try {
+				outputStream.close();
+			} catch (IOException e) {
+				log.error("文件流关闭失败,msg:"+e.getMessage());
+			}
+		}
+		return inputStream;
 	}
 }

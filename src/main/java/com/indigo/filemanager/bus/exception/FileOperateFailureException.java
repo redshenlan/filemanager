@@ -35,7 +35,11 @@ public class FileOperateFailureException extends RuntimeException {
                 break;
             case FILE_RECORD_NOT_FOUND:
             	this.code = "405";
-            	this.msg = "文件数据库记录未找到";
+            	this.msg = "未找到文件数据库记录";
+            	break;
+            case FILE_PERSISTENCE_NOT_FOUND:
+            	this.code = "406";
+            	this.msg = "未找到文件持久化信息";
             	break;
             default:
                 this.code = "499";

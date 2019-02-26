@@ -14,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,7 +27,6 @@ import com.indigo.filemanager.bus.domain.entity.User;
 import com.indigo.filemanager.bus.exception.FileOperateFailureException;
 import com.indigo.filemanager.bus.service.FileManager;
 import com.indigo.filemanager.bus.service.FileTransferService;
-import com.indigo.filemanager.common.Constants;
 import com.indigo.filemanager.common.ServerResponse;
 import com.indigo.filemanager.common.persistence.vo.FileInfo;
 import com.indigo.filemanager.common.security.sign.annotation.CurrentUser;
@@ -50,11 +50,13 @@ public class FileManagerController {
 	
 	/**
 	 * 上传文件
+	 * @param user
+	 * @param filename
 	 * @param file
 	 * @return
-	 * @throws IOException 
+	 * @throws IOException
 	 */
-	@PostMapping(value = "/files/{filename}")
+	@PutMapping(value = "/files/{filename}")
 	@NeedCheckSignature
 	public ServerResponse upload(@CurrentUser User user,@PathVariable("filename") String filename
 			,@RequestParam("file") MultipartFile file) throws IOException {
@@ -92,56 +94,47 @@ public class FileManagerController {
 	
 	/**
 	 * 下载文件
+	 * @param user
 	 * @param filekey
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	@GetMapping(value = "/files/{filekey}")
-	public ResponseEntity<byte[]> download(@PathVariable("filekey") String filekey
-			,@RequestParam("userCode") String userCode) throws Exception {
-		FileInfo fileInfo = fileManager.downloadFile(filekey,userCode);
+	@NeedCheckSignature
+	public ResponseEntity<byte[]> download(@CurrentUser User user,@PathVariable("filekey") String filekey) throws Exception {
+		FileInfo fileInfo = fileManager.downloadFile(filekey,user);
 		HttpHeaders headers = new HttpHeaders();
-	    headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);  
+	    headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
 	    headers.setContentDispositionFormData("attachment", URLEncoder.encode(fileInfo.getFileName(),"UTF-8")); 
 	    ByteArrayOutputStream baos = (ByteArrayOutputStream)fileInfo.getDownFile();
 	    return new ResponseEntity<byte[]>(baos.toByteArray(),headers, HttpStatus.CREATED);
 	}
 	
 	/**
-	 * 更新文件
-	 * @param file
+	 * 删除文件
+	 * @param user
+	 * @param filekey
 	 * @return
 	 */
-	@PutMapping(value = "/files/{filekey}")
-	public ServerResponse update(@PathVariable("filekey") String filekey
-			,@RequestParam("file") MultipartFile file,@RequestParam("userCode") String userCode) {
-		try {
-			FileInfo fileInfo = new FileInfo();
-			fileInfo.setFile(file.getInputStream());
-			fileInfo.setFileKey(filekey);
-			String fileSuffix = file.getOriginalFilename().substring(
-					file.getOriginalFilename().lastIndexOf(".") + 1).toLowerCase();
-			fileInfo.setFileSuffix(fileSuffix);
-			fileInfo.setFileSize(file.getSize());
-			fileInfo.setFileName(file.getOriginalFilename());
-			fileManager.updateFile(fileInfo,userCode);
-			return ServerResponse.success();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return ServerResponse.failure(Constants.Error.DEFAULT.eval(), e.getMessage());
-		}
+	@DeleteMapping(value = "/files/{filekey}")
+	@NeedCheckSignature
+	public ServerResponse delete(@CurrentUser User user,@PathVariable("filekey") String filekey) {
+		fileManager.deleteFile(filekey, user);
+		return ServerResponse.success();
 	}
 	
 	/**
-	 * 更新文件
-	 * @param file
+	 * 更新文件(仅更新文件名称)
+	 * @param user
+	 * @param filekey
+	 * @param filename
 	 * @return
 	 */
-	@PutMapping(value = "/puttest")
+	@PostMapping(value = "/files/{filekey}/{filename}")
 	@NeedCheckSignature
-	public ServerResponse puttest(@CurrentUser User user){
-		System.out.println("puttest");
-		System.out.println(user.getUserName());
+	public ServerResponse update(@CurrentUser User user,@PathVariable("filekey") String filekey
+			,@PathVariable("filename") String filename) {
+		fileManager.updateFile(filekey, filename, user);
 		return ServerResponse.success();
 	}
 	

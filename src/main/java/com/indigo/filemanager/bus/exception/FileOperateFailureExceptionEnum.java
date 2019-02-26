@@ -18,6 +18,8 @@ public enum FileOperateFailureExceptionEnum {
 	FILE_TRANSFER_NOCONFIG,
 	//未找到文件数据库记录
 	FILE_RECORD_NOT_FOUND,
+	//未找到文件持久化信息
+	FILE_PERSISTENCE_NOT_FOUND,
 	//IO出错
 	IO_ERROR;
 }

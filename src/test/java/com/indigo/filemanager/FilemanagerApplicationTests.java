@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.indigo.filemanager.bus.service.util.JacobOffice2PdfUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,15 +41,11 @@ public class FilemanagerApplicationTests {
 	}
 	
 	@Test
-	public void userRepositoryTest() {
+	public void fileManagerTest() throws IOException {
 		User user = userRepository.findByAccessKeyIdAndValid("010101","Y");
-		System.out.println(user.getUserName());
+		InputStream is = fileManager.getFileFdf("1c5e692206ef415a89a44f08b0ea39a1", user);
+		System.out.println(is.available());
 	}
 	
-	@Test
-	public void fileManagerTest() throws Exception {
-		fileManager.deleteFile("13239619412a4221ba54a4d9839f03bf", "010101");
-	}
-
 }
 
