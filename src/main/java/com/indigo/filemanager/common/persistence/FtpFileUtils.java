@@ -1,19 +1,18 @@
 package com.indigo.filemanager.common.persistence;
 
+import com.indigo.filemanager.common.persistence.threadPool.ObjectPool;
 import com.indigo.filemanager.common.persistence.vo.FileInfo;
 import com.indigo.filemanager.common.persistence.vo.SaveFileResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
-import org.apache.commons.net.ftp.FTPReply;
-import org.springframework.beans.factory.annotation.Value;
 
 import javax.validation.constraints.NotNull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,43 +20,11 @@ import java.util.List;
 
 @Slf4j
 public class FtpFileUtils implements FileUtils {
-    //ftp服务器地址
-    @Value("${ftp.hostname}")
-    private String hostname = "192.168.1.249";
-    //ftp服务器端口号默认为21
-    @Value("${ftp.port}")
-    private Integer port = 21;
-    //ftp登录账号
-    @Value("${ftp.username}")
-    private String username = "root";
-    //ftp登录密码
-    @Value("${ftp.password}")
-    private String password = "123";
+    private final ObjectPool<FTPClient> objectPool;
 
-    private FTPClient ftpClient = null;
-
-    /**
-     * 初始化ftp服务器
-     */
-    public void initFtpClient() {
-        ftpClient = new FTPClient();
-        ftpClient.setControlEncoding("utf-8");
-        try {
-            log.info("connecting...ftp服务器:" + this.hostname + ":" + this.port);
-            ftpClient.connect(hostname, port); //连接ftp服务器
-            ftpClient.login(username, password); //登录ftp服务器
-            int replyCode = ftpClient.getReplyCode(); //是否成功登录服务器
-            if (!FTPReply.isPositiveCompletion(replyCode)) {
-                log.info("connect failed...ftp服务器:" + this.hostname + ":" + this.port);
-            }
-            log.info("connect successfu...ftp服务器:" + this.hostname + ":" + this.port);
-        } catch (MalformedURLException e) {
-            log.error(e.getMessage());
-            throw new RuntimeException(e.getMessage());
-        } catch (IOException e) {
-            log.error(e.getMessage());
-            throw new RuntimeException(e.getMessage());
-        }
+    public FtpFileUtils(ObjectPool<FTPClient> objectPool)
+    {
+        this.objectPool = objectPool;
     }
 
     @Override
@@ -72,27 +39,30 @@ public class FtpFileUtils implements FileUtils {
     @Override
     public SaveFileResult saveFile(FileInfo fileInfo) {
         InputStream inputStream = null;
+        FTPClient ftpClient = null;
         try {
+            ftpClient = objectPool.borrowObject();
             log.info("开始上传文件");
             inputStream = fileInfo.getFile();
-            initFtpClient();
             ftpClient.setFileType(FTPClient.BINARY_FILE_TYPE);
-            CreateDirecroty(fileInfo.getFilepath());
+            createDirecroty(fileInfo.getFilepath(),ftpClient);
             ftpClient.makeDirectory(fileInfo.getFilepath());
             ftpClient.changeWorkingDirectory(fileInfo.getFilepath());
             String fileName = getFileName(fileInfo);
             ftpClient.storeFile(fileName, inputStream);
             inputStream.close();
-            ftpClient.logout();
             return SaveFileResult.ok(fileInfo.getFileKey()).message("上传文件成功").build();
         } catch (Exception e) {
             e.printStackTrace();
+            throw  new RuntimeException("保存ftp内容异常");
         } finally {
-            if (ftpClient.isConnected()) {
+            if(ftpClient != null)
+            {
                 try {
-                    ftpClient.disconnect();
-                } catch (IOException e) {
+                    objectPool.returnObject(ftpClient);
+                } catch (InterruptedException | IOException e) {
                     e.printStackTrace();
+                    log.error(e.getCause().getMessage());
                 }
             }
             if (null != inputStream) {
@@ -100,18 +70,19 @@ public class FtpFileUtils implements FileUtils {
                     inputStream.close();
                 } catch (IOException e) {
                     e.printStackTrace();
+                    log.error(e.getCause().getMessage());
                 }
             }
         }
-        return SaveFileResult.fail(null).message("上传文件失败").build();
     }
 
     @Override
     public SaveFileResult getFile(FileInfo fileInfo) {
         String fileName = getFileName(fileInfo);
-        OutputStream os = null;
+        OutputStream os;
+        FTPClient ftpClient = null;
         try {
-            initFtpClient();
+            ftpClient = objectPool.borrowObject();
             //切换FTP目录
             ftpClient.changeWorkingDirectory(fileInfo.getFilepath());
             os = new ByteArrayOutputStream();
@@ -119,44 +90,47 @@ public class FtpFileUtils implements FileUtils {
             {
                 return SaveFileResult.fail(fileInfo.getFileKey()).message("获取文件失败！");
             }
-            ftpClient.logout();
             return SaveFileResult.ok(fileInfo.getFileKey()).downFile(os).message("获取文件成功").build();
         } catch (Exception e) {
             log.error("获取文件失败" + e.getMessage(), e.getCause());
+            throw new RuntimeException("获取文件失败" + e.getMessage(), e.getCause());
         } finally {
-            if (ftpClient.isConnected()) {
+            if (ftpClient != null) {
                 try {
-                    ftpClient.disconnect();
-                } catch (IOException e) {
+                    objectPool.returnObject(ftpClient);
+                } catch (InterruptedException|IOException e) {
                     e.printStackTrace();
+                    log.error("获取文件失败" + e.getMessage(), e.getCause());
                 }
             }
         }
-        return SaveFileResult.fail(fileInfo.getFileKey()).message("获取文件失败！").build();
     }
 
     @Override
     public SaveFileResult delteFile(FileInfo fileInfo) {
+        FTPClient ftpClient = null;
         try {
             String fileName = getFileName(fileInfo);
-            initFtpClient();
+            ftpClient = objectPool.borrowObject();
             //切换FTP目录
             ftpClient.changeWorkingDirectory(fileInfo.getFilepath());
             ftpClient.dele(fileName);
-            ftpClient.logout();
             return SaveFileResult.ok(fileInfo.getFileKey()).message("删除文件成功").build();
         } catch (Exception e) {
             log.error("删除文件失败" + e.getMessage(), e.getCause());
+            throw new RuntimeException("删除文件失败" + e.getMessage(), e.getCause());
         } finally {
-            if (ftpClient.isConnected()) {
+            if (ftpClient!=null) {
                 try {
-                    ftpClient.disconnect();
+                    objectPool.returnObject(ftpClient);
                 } catch (IOException e) {
-                    log.error("ftp连接关闭失败！" + e.getMessage(), e.getCause());
+                    log.error("ftp连接返回池失败！" + e.getMessage(), e.getCause());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    log.error("ftp连接返回池失败！" + e.getMessage(), e.getCause());
                 }
             }
         }
-        return SaveFileResult.fail(fileInfo.getFileKey()).message("删除失败！").build();
     }
 
     @NotNull
@@ -176,58 +150,52 @@ public class FtpFileUtils implements FileUtils {
     /**
      * 创建多层目录文件，如果有ftp服务器已存在该文件，则不创建，如果无，则创建
      *
-     * @param remote
-     * @return
-     * @throws IOException
+     * @param remote 远程路径
+     * @param ftpClient ftp客户端
+     * @throws IOException 抛出异常
      */
-    private boolean CreateDirecroty(String remote) throws IOException {
-        boolean success = true;
-        String directory = remote + "/";
+    private void createDirecroty(String remote, FTPClient ftpClient) throws IOException {
+        String prefix = "/";
+        String directory = remote + prefix;
         // 如果远程目录不存在，则递归创建远程服务器目录
-        if (!directory.equalsIgnoreCase("/") && !changeWorkingDirectory(directory)) {
-            int start = 0;
-            int end = 0;
-            if (directory.startsWith("/")) {
+        if (!directory.equalsIgnoreCase(prefix) && !changeWorkingDirectory(directory,ftpClient)) {
+            int start;
+            int end;
+            if (directory.startsWith(prefix)) {
                 start = 1;
             } else {
                 start = 0;
             }
-            end = directory.indexOf("/", start);
-            String path = "";
-            String paths = "";
-            while (true) {
-                String subDirectory = new String(remote.substring(start, end).getBytes("GBK"), "iso-8859-1");
-                path = path + "/" + subDirectory;
-                if (!existFile(path)) {
-                    if (makeDirectory(subDirectory)) {
-                        changeWorkingDirectory(subDirectory);
+            end = directory.indexOf(prefix, start);
+            StringBuilder path = new StringBuilder();
+            while (end > start) {
+                String subDirectory = new String(remote.substring(start, end).getBytes("GBK"), StandardCharsets.ISO_8859_1);
+                path.append("/");
+                path.append(subDirectory);
+                if (!existFile(path.toString(),ftpClient)) {
+                    if (makeDirectory(subDirectory,ftpClient)) {
+                        changeWorkingDirectory(subDirectory,ftpClient);
                     } else {
                         log.info("创建目录[" + subDirectory + "]失败");
-                        changeWorkingDirectory(subDirectory);
+                        changeWorkingDirectory(subDirectory,ftpClient);
                     }
                 } else {
-                    changeWorkingDirectory(subDirectory);
+                    changeWorkingDirectory(subDirectory,ftpClient);
                 }
-
-                paths = paths + "/" + subDirectory;
                 start = end + 1;
-                end = directory.indexOf("/", start);
-                // 检查所有目录是否创建完毕
-                if (end <= start) {
-                    break;
-                }
+                end = directory.indexOf(prefix, start);
             }
         }
-        return success;
     }
 
     /**
      * 改变目录路径
      *
-     * @param directory
-     * @return
+     * @param directory 目录路径
+     * @param ftpClient ftp客户端
+     * @return 返回切换目录路径是否成功
      */
-    private boolean changeWorkingDirectory(String directory) {
+    private boolean changeWorkingDirectory(String directory,FTPClient ftpClient) {
         boolean flag = false;
         try {
             flag = ftpClient.changeWorkingDirectory(directory);
@@ -244,11 +212,11 @@ public class FtpFileUtils implements FileUtils {
 
     /**
      * 判断ftp服务器文件是否存在
-     * @param path
-     * @return
-     * @throws IOException
+     * @param path 文件路径
+     * @return 返回是否成功
+     * @throws IOException 抛出ftp流异常
      */
-    private boolean existFile(String path) throws IOException {
+    private boolean existFile(String path,FTPClient ftpClient) throws IOException {
         boolean flag = false;
         FTPFile[] ftpFileArr = ftpClient.listFiles(path);
         if (ftpFileArr.length > 0) {
@@ -260,10 +228,11 @@ public class FtpFileUtils implements FileUtils {
     /**
      * 创建目录
      *
-     * @param dir
-     * @return
+     * @param dir 目录路径
+     * @param ftpClient ftp客户端
+     * @return 返回是否成功
      */
-    private boolean makeDirectory(String dir) {
+    private boolean makeDirectory(String dir,FTPClient ftpClient) {
         boolean flag = false;
         try {
             flag = ftpClient.makeDirectory(dir);
