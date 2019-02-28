@@ -104,10 +104,18 @@ public class FileManagerController {
 	public ResponseEntity<byte[]> download(@CurrentUser User user,@PathVariable("filekey") String filekey) throws Exception {
 		FileInfo fileInfo = fileManager.downloadFile(filekey,user);
 		HttpHeaders headers = new HttpHeaders();
-	    headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+		if ("doc".equals(fileInfo.getFileSuffix())) {
+			headers.setContentType(MediaType.parseMediaType("application/msword"));
+		} else if ("docx".equals(fileInfo.getFileSuffix())) {
+			headers.setContentType(MediaType.parseMediaType("application/vdn.openxmlformats-officedocument.word"));
+		} else if ("pdf".equals(fileInfo.getFileSuffix())) {
+			headers.setContentType(MediaType.parseMediaType("application/pdf"));
+		} else {
+			headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+		}
 	    headers.setContentDispositionFormData("attachment", URLEncoder.encode(fileInfo.getFileName(),"UTF-8")); 
 	    ByteArrayOutputStream baos = (ByteArrayOutputStream)fileInfo.getDownFile();
-	    return new ResponseEntity<byte[]>(baos.toByteArray(),headers, HttpStatus.CREATED);
+	    return new ResponseEntity<byte[]>(baos.toByteArray(),headers, HttpStatus.OK);
 	}
 	
 	/**
