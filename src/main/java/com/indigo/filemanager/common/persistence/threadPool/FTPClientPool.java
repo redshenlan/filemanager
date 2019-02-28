@@ -58,7 +58,6 @@ public class FTPClientPool implements ObjectPool<FTPClient> {
             invalidateObject(client);
             //制造并添加新对象到池中
             client = factory.makeObject();
-            addObject();
         }
         return client;
     }

@@ -21,8 +21,7 @@ public class FtpClientFactory implements PoolableObjectFactory<FTPClient> {
     @Override
     public FTPClient makeObject() {
         FTPClient ftpClient = new FTPClient();
-
-        ftpClient.setConnectTimeout(5000);
+        ftpClient.setConnectTimeout(0);
         try {
             ftpClient.connect(hostname, port);
             int reply = ftpClient.getReplyCode();
@@ -69,7 +68,8 @@ public class FtpClientFactory implements PoolableObjectFactory<FTPClient> {
         try {
             return client.sendNoOp();
         } catch (IOException e) {
-            throw new RuntimeException("Failed to validate client: " + e, e);
+            log.error(e.getMessage(),e.getCause());
         }
+        return false;
     }
 }
