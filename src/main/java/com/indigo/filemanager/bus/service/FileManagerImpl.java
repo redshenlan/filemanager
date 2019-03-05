@@ -258,18 +258,19 @@ public class FileManagerImpl implements FileManager{
 		ByteArrayInputStream inputStream = null;
 		if(result.isResult()){
 			outputStream = (ByteArrayOutputStream) result.getDownFile();
+			if(outputStream==null){
+				throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_PERSISTENCE_NOT_FOUND);
+			}
 			inputStream = new ByteArrayInputStream(outputStream.toByteArray());
 		}else{
 			throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_PERSISTENCE_NOT_FOUND);
 		}
 		//保存文件查看记录
 		this.saveFileOperateRecord(fileRecord, user, OperaterTypeEnum.READ);
-		if(outputStream!=null){
-			try {
-				outputStream.close();
-			} catch (IOException e) {
-				log.error("文件流关闭失败,msg:"+e.getMessage());
-			}
+		try {
+			outputStream.close();
+		} catch (IOException e) {
+			log.error("文件流关闭失败,msg:"+e.getMessage());
 		}
 		return inputStream;
 	}

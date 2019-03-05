@@ -60,14 +60,16 @@ public class FileTransferService {
         }else{
             throw new FileOperateFailureException(FileOperateFailureExceptionEnum.FILE_TRANSFER_NOCONFIG);
         }
-            FileInputStream fileInputStream = new FileInputStream(filePath + "." + outFileType);
-            BufferedInputStream bis = new BufferedInputStream(fileInputStream);
-            outputStream = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            while ((bis.read(buffer)) != -1) {
-                outputStream.write(buffer);
-            }
-
+        FileInputStream fileInputStream = new FileInputStream(filePath + "." + outFileType);
+        BufferedInputStream bis = new BufferedInputStream(fileInputStream);
+        outputStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        while ((bis.read(buffer)) != -1) {
+            outputStream.write(buffer);
+        }
+        if(bis!=null){
+        	bis.close();
+        }
         return outputStream;
     }
 

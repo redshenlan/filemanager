@@ -1,5 +1,6 @@
 package com.indigo.filemanager.common.util;
 
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
@@ -23,13 +24,13 @@ public class HMACSHA1EncryptUtil {
 		byte[] result = null;
 		try {
 			// 根据给定的字节数组构造一个密钥,第二参数指定一个密钥算法的名称
-			SecretKeySpec signinKey = new SecretKeySpec(key.getBytes(), HMAC_SHA1_ALGORITHM);
+			SecretKeySpec signinKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), HMAC_SHA1_ALGORITHM);
 			// 生成一个指定 Mac 算法 的 Mac 对象
 			Mac mac = Mac.getInstance(HMAC_SHA1_ALGORITHM);
 			// 用给定密钥初始化 Mac 对象
 			mac.init(signinKey);
 			// 完成 Mac 操作
-			byte[] rawHmac = mac.doFinal(data.getBytes());
+			byte[] rawHmac = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
 			result = Base64.encodeBase64(rawHmac);
 		} catch (NoSuchAlgorithmException e) {
 			return null;
@@ -37,7 +38,7 @@ public class HMACSHA1EncryptUtil {
 			return null;
 		}
 		if (null != result) {
-			return new String(result);
+			return new String(result,StandardCharsets.UTF_8);
 		} else {
 			return null;
 		}
