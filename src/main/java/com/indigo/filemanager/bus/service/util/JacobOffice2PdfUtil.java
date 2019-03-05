@@ -1,15 +1,13 @@
 package com.indigo.filemanager.bus.service.util;
 
+import org.apache.log4j.Logger;
+
 import com.indigo.filemanager.bus.exception.FileOperateFailureException;
 import com.indigo.filemanager.bus.exception.FileOperateFailureExceptionEnum;
 import com.jacob.activeX.ActiveXComponent;
 import com.jacob.com.ComThread;
 import com.jacob.com.Dispatch;
 import com.jacob.com.Variant;
-import org.apache.log4j.Logger;
-
-import java.io.File;
-import java.util.Date;
 
 /***
  *  * office文件转换为PDF文件  *   * @author leo.li  *  
@@ -55,7 +53,7 @@ public class JacobOffice2PdfUtil {
             Dispatch.put(doc, "ShowRevisions", false);
             Dispatch.call(doc, "ExportAsFixedFormat", pdfFile, wdFormatPDF);// word保存为pdf格式宏，值为17
             // 关闭文档
-            Variant var=Dispatch.call(doc, "Close", false);
+            Dispatch.call(doc, "Close", false);
             // 关闭Word应用程序
             app.invoke("Quit", 0);
             ComThread.Release();
