@@ -21,7 +21,7 @@
 	</properties>
 
 	<dependencies>
-	<dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
@@ -144,6 +144,18 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>findbugs-maven-plugin</artifactId>
+				<version>3.0.4</version>
+				<configuration>
+					<effort>Low</effort>
+					<threshold>Medium</threshold>
+					<failOnError>true</failOnError>
+					<includeTests>true</includeTests>
+					<xmlOutput>true</xmlOutput>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
