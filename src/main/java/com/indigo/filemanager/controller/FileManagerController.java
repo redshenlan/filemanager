@@ -146,4 +146,14 @@ public class FileManagerController {
 		return ServerResponse.success();
 	}
 	
+	/**
+	 * 测试用
+	 * @param name
+	 * @return
+	 */
+	@GetMapping(value = "/hello/{name}")
+	public String hello(@PathVariable("name") String name){
+		return "【first】:hello,"+name;
+	}
+	
 }
