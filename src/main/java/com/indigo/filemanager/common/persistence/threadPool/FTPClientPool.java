@@ -42,18 +42,16 @@ public class FTPClientPool implements ObjectPool<FTPClient> {
 
     @Override
     public void addObject() throws InterruptedException {
-        pool.offer(factory.makeObject(),3, TimeUnit.SECONDS);
+       if(!pool.offer(factory.makeObject(),3, TimeUnit.SECONDS))
+       {
+          throw  new RuntimeException("添加异常！");
+       }
     }
 
     @Override
     public FTPClient borrowObject() throws InterruptedException, IOException {
         FTPClient client = pool.take();
-        if (client == null) {
-            client = factory.makeObject();
-            addObject();
-        }
-        //验证不通过
-        else if(!factory.validateObject(client)){
+        if(!factory.validateObject(client)){
             //使对象在池中失效
             invalidateObject(client);
             //制造并添加新对象到池中

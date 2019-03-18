@@ -95,6 +95,13 @@ public class MongodbFileUtils implements FileUtils {
                 e.printStackTrace();
                 log.error("Mongodb保存文件失败：" + e.getMessage(), e.getCause());
                 return SaveFileResult.fail(fileInfo.getFileKey()).message("上传文件失败！").build();
+            }finally {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    throw new RuntimeException(e.getMessage(),e.getCause());
+                }
             }
             Document document = new Document();
             BsonBinary bsonBinary = new BsonBinary(BsonBinarySubType.BINARY, buffer);
@@ -222,6 +229,13 @@ public class MongodbFileUtils implements FileUtils {
                 e.printStackTrace();
                 log.error("Mongodb保存下载失败：" + e.getMessage(), e.getCause());
                 return SaveFileResult.fail(fileInfo.getFileKey()).message("更新文件失败！").build();
+            }
+            finally {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    throw  new RuntimeException(e.getMessage(),e.getCause());
+                }
             }
             BsonBinary bsonBinary = new BsonBinary(BsonBinarySubType.BINARY, buffer);
             Document document = new Document();

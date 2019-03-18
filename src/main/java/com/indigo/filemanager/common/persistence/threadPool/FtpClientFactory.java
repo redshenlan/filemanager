@@ -56,7 +56,10 @@ public class FtpClientFactory implements PoolableObjectFactory<FTPClient> {
         } finally {
             // 注意,一定要在finally代码中断开连接，否则会导致占用ftp连接情况
             try {
-                client.disconnect();
+                if(client != null)
+                {
+                    client.disconnect();
+                }
             } catch (IOException io) {
                 io.printStackTrace();
             }
