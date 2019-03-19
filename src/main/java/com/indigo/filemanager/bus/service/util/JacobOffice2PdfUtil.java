@@ -64,7 +64,7 @@ public class JacobOffice2PdfUtil {
     }
 
 
-    public static void Ex2PDF(String inputFile, String pdfFile) {
+    public static void ex2PDF(String inputFile, String pdfFile) {
         try {
             ComThread.InitSTA(true);
             ActiveXComponent ax = new ActiveXComponent("KET.Application");

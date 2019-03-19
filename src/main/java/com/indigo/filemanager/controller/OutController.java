@@ -63,11 +63,6 @@ public class OutController {
 		}
 		return null;
 	}
-	@RequestMapping("/testTransfer")
-	public void testTransfer() throws IOException {
-		InputStream inputStream = new FileInputStream("D:\\ftp\\1546422516097.doc");
-		OutputStream outputStream=fileTransferService.transferPdf(inputStream,"doc","pdf");
-		outputStream.close();
-	}
+
 
 }

@@ -52,7 +52,7 @@ public class FileTransferService {
                  JacobOffice2PdfUtil.word2PDF(filePath + "." + filetype, filePath + "." + outFileType);
             }
             if (!StringUtils.isEmpty(types[1]) && (","+types[1]+",").contains("," + filetype + ",")) {
-                 JacobOffice2PdfUtil.Ex2PDF(filePath + "." + filetype, filePath + "." + outFileType);
+                 JacobOffice2PdfUtil.ex2PDF(filePath + "." + filetype, filePath + "." + outFileType);
             }
             if (!StringUtils.isEmpty(types[2]) && (","+types[2]+",").contains("," + filetype + ",")) {
                  JacobOffice2PdfUtil.ppt2PDF(filePath + "." + filetype, filePath + "." + outFileType);

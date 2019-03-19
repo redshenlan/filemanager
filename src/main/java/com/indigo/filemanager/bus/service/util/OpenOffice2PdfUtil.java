@@ -43,7 +43,9 @@ public class OpenOffice2PdfUtil {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            pro.destroy();
+            if(pro!=null){
+                pro.destroy();
+            }
         }
 
         return null;
