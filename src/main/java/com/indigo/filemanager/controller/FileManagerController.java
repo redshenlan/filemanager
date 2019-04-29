@@ -85,6 +85,7 @@ public class FileManagerController {
 			log.error("文件转换失败,code:" + ex.getCode() + ",msg:" + ex.getMsg());
 		} catch (Exception ex) {
 			log.error("文件转换失败,msg:" + ex.getMessage());
+			ex.printStackTrace();
 		}
 		//返回结果
 		Map<String,Object> dataMap = new HashMap<String,Object>();

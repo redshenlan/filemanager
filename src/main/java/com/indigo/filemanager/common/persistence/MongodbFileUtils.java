@@ -109,7 +109,6 @@ public class MongodbFileUtils implements FileUtils {
             document.put("filepath",fileInfo.getFilepath());
             document.put("filekey", fileInfo.getFileKey());
             document.put("filename",fileInfo.getFileKey() + "." + fileInfo.getFileSuffix());
-            document.put("_id",fileInfo.getFileKey());
             collection.insertOne(document);
         }
         return SaveFileResult.ok(fileInfo.getFileKey()).message("上传文件成功").build();
@@ -243,7 +242,6 @@ public class MongodbFileUtils implements FileUtils {
             document.put("filepath",fileInfo.getFilepath());
             document.put("filekey", fileInfo.getFileKey());
             document.put("filename",fileInfo.getFileKey() + "." + fileInfo.getFileSuffix());
-            document.put("_id",fileInfo.getFileKey());
             Document real = new Document();
             real.put("$set",document);
             Document document1 = collection.findOneAndUpdate(basicDBObject,real);
