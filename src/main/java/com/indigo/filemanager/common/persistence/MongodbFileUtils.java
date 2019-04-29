@@ -155,6 +155,7 @@ public class MongodbFileUtils implements FileUtils {
             BasicDBObject basicDBObject = new BasicDBObject();
             basicDBObject.put("filekey",fileInfo.getFileKey());
             basicDBObject.put("filepath",fileInfo.getFilepath());
+            basicDBObject.put("filename",fileInfo.getFileKey() + "." + fileInfo.getFileSuffix());
             FindIterable<Document> findIterable = collection.find(basicDBObject);
             MongoCursor<Document> cursor = findIterable.iterator();
             while(cursor.hasNext())
@@ -194,6 +195,7 @@ public class MongodbFileUtils implements FileUtils {
             BasicDBObject basicDBObject = new BasicDBObject();
             basicDBObject.put("filekey",fileInfo.getFileKey());
             basicDBObject.put("filepath",fileInfo.getFilepath());
+            basicDBObject.put("filename",fileInfo.getFileKey() + "." + fileInfo.getFileSuffix());
             DeleteResult result = collection.deleteMany(basicDBObject);
             if(result.getDeletedCount()>0)
             {
